@@ -1,6 +1,6 @@
 module github.com/chenz24/ks-cli
 
-go 1.15
+go 1.17
 
 require (
 	github.com/manifoldco/promptui v0.9.0 // indirect
