@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chenz24/ks-cli/cmd"
+	"github.com/chenz24/ksnext/cmd"
 )
 
 var version = "0.0.1"

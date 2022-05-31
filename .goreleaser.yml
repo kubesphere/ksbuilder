@@ -8,7 +8,7 @@ before:
 
 builds:
   -
-    binary: ksc
+    binary: ksnext
     ldflags: -s -w -X main.version={{ .Version }}
     goos:
       - linux
@@ -25,11 +25,11 @@ universal_binaries:
 
 brews:
   -
-    name: ksc
-    homepage: "https://github.com/chenz24/ks-cli"
+    name: ksnext
+    homepage: "https://github.com/chenz24/ksnext"
     tap:
       owner: chenz24
-      name: homebrew-ksc
+      name: homebrew-tap
     commit_author:
       name: chenz24
       email: chenz8606@gmail.com
@@ -51,7 +51,7 @@ checksum:
 #nfpms:
 #  -
 #    vendor: ksc
-#    homepage:  https://github.com/chenz24/ks-cli
+#    homepage:  https://github.com/chenz24/ksnext
 #    maintainer: "ChenZhen chenz8606@gmail.com"
 #    description: "A command line interface for KubeSphere plugin system"
 #    license: GPL-3.0
