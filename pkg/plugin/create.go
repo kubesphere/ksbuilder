@@ -2,7 +2,6 @@ package plugin
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -87,7 +86,6 @@ var (
 )
 
 func Create(p string, config Config) (err error) {
-	fmt.Print(config)
 	if err = os.MkdirAll(p, 0755); err != nil {
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 func newVersionCmd(version string) *cobra.Command {
 	return &cobra.Command{
 		Use:          "version",
-		Short:        "Displays d4sva binary version",
+		Short:        "Displays version",
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		Run: func(cmd *cobra.Command, args []string) {

@@ -20,7 +20,7 @@ func newPluginCmd() *cobra.Command {
 		Use:          "create",
 		Short:        "Create a new plugin",
 		SilenceUsage: true,
-		Args:         cobra.ExactArgs(1),
+		Args:         cobra.ExactArgs(0),
 		RunE:         run,
 	}
 
@@ -67,13 +67,13 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	pwd, _ := os.Getwd()
-	p := path.Join(pwd, args[0])
+	p := path.Join(pwd, name)
 	if err := plugin.Create(p, pluginConfig); err != nil {
 		return err
 	}
 
 	fmt.Printf("Directory: %s\n\n", p)
-	fmt.Println("The project has been created.")
+	fmt.Println("The plugin charts has been created.")
 
 	return nil
 }
