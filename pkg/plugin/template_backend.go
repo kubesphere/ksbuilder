@@ -145,11 +145,11 @@ spec:
 	_tplBackendExtensionsYaml = `apiVersion: extensions.kubesphere.io/v1alpha1
 kind: APIService
 metadata:
-  name: v1alpha1.employee.kubesphere.io
+  name: v1alpha1.[[ .Name ]].kubesphere.io
   annotations:
-    meta.helm.sh/release-name: employee-0.10.0
+    meta.helm.sh/release-name: [[ .Name ]]-0.10.0
 spec:
-  group: employee.kubesphere.io                               # API Group
+  group: [[ .Name ]].kubesphere.io                               # API Group
   version: v1alpha1                                         # API Version
   endpoint: http://{{ include "backend.fullname" . }}.{{ .Release.Namespace }}.svc  # backend
 #  insecureSkipTLSVerify: true

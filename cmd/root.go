@@ -21,6 +21,8 @@ func newRootCmd(version string) *cobra.Command {
 	cmd.AddCommand(newProjectCmd())        // init_project subcommand
 	cmd.AddCommand(newPluginCmd())         // create_plugin subcommand
 	cmd.AddCommand(installPluginCmd())     // publish_plugin subcommand
+	cmd.AddCommand(uninstallPluginCmd())   // uninstall_plugin subcommand
+	cmd.AddCommand(upgradePluginCmd())     // upgrade_plugin subcommand
 
 	return cmd
 }
