@@ -17,33 +17,52 @@ builds:
       - amd64
       - arm64
 
-archives:
-  -
-    builds:
-      - ksc
-    format_overrides:
-      - goos: windows
-        format: zip
-    replacements:
-      darwin: Darwin
-      linux: Linux
-      amd64: x86_64
+release:
+  prerelease: auto
 
-nfpms:
+universal_binaries:
+  - replace: true
+
+brews:
   -
-    vendor: ksc
-    homepage:  https://github.com/chenz24/ks-cli
-    maintainer: "ChenZhen chenz8606@gmail.com"
-    description: "A command line interface for KubeSphere plugin system"
-    license: GPL-3.0
-    formats:
-      - apk
-      - deb
-      - rpm
-    bindir: /usr/local/bin
+    name: ksc
+    homepage: "https://github.com/chenz24/ks-cli"
+    tap:
+      owner: chenz24
+      name: homebrew-ksc
+    commit_author:
+      name: chenz24
+      email: chenz8606@gmail.com
 
 checksum:
-  name_template: "checksums.txt"
+  name_template: 'checksums.txt'
+#archives:
+#  -
+#    builds:
+#      - ksc
+#    format_overrides:
+#      - goos: windows
+#        format: zip
+#    replacements:
+#      darwin: Darwin
+#      linux: Linux
+#      amd64: x86_64
+#
+#nfpms:
+#  -
+#    vendor: ksc
+#    homepage:  https://github.com/chenz24/ks-cli
+#    maintainer: "ChenZhen chenz8606@gmail.com"
+#    description: "A command line interface for KubeSphere plugin system"
+#    license: GPL-3.0
+#    formats:
+#      - apk
+#      - deb
+#      - rpm
+#    bindir: /usr/local/bin
+#
+#checksum:
+#  name_template: "checksums.txt"
 
 changelog:
   sort: asc
