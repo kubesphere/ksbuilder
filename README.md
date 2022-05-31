@@ -1,3 +1,16 @@
 # KSC command line interface
 
-> todo ...
+## init
+```
+// init a project
+ksnext init <project-directory>
+```
+## create plugin charts
+```
+ksnext create <plugin-name>
+```
+
+## install plugin
+```
+ksnext install <plugin-name>
+```
