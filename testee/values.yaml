@@ -1,0 +1,11 @@
+frontend:
+  enabled: true
+  image:
+    repository: 
+    tag: latest
+
+backend:
+  enabled: true
+  image:
+    repository: 
+    tag: latest
