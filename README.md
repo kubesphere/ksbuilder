@@ -1,4 +1,4 @@
-# KSC command line interface
+# ksnext command line interface
 
 ## init
 ```
