@@ -8,8 +8,8 @@ import (
 
 func newRootCmd(version string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ksp",
-		Short: "ksp is a command line interface for KubeSphere plugin system",
+		Use:   "ksnext",
+		Short: "ksnext is a command line interface for KubeSphere plugin system",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println(cmd.UsageString())
 
@@ -20,6 +20,7 @@ func newRootCmd(version string) *cobra.Command {
 	cmd.AddCommand(newVersionCmd(version)) // version subcommand
 	cmd.AddCommand(newProjectCmd())        // init_project subcommand
 	cmd.AddCommand(newPluginCmd())         // create_plugin subcommand
+	cmd.AddCommand(installPluginCmd())     // publish_plugin subcommand
 
 	return cmd
 }
