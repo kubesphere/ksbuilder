@@ -91,7 +91,7 @@ func upgradePluginCmd() *cobra.Command {
 		Short:        "upgrade a plugin",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(1),
-		RunE:         o.publish,
+		RunE:         o.upgrade,
 	}
 
 	cmd.Flags().StringVarP(&o.namespace, "namespace", "n", o.namespace, "namespace")
