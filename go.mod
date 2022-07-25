@@ -1,4 +1,4 @@
-module github.com/chenz24/ksnext
+module github.com/chenz24/ksbuilder
 
 go 1.17
 

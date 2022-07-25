@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/chenz24/ksnext/pkg/plugin"
+	"github.com/chenz24/ksbuilder/pkg/plugin"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"os"

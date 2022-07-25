@@ -1,16 +1,16 @@
-# ksnext command line interface
+# ksbuilder command line interface
 
 ## init
 ```
 // init a project
-ksnext init <project-directory>
+ksbuilder init <project-directory>
 ```
 ## create plugin charts
 ```
-ksnext create <plugin-name>
+ksbuilder create <plugin-name>
 ```
 
 ## install plugin
 ```
-ksnext install <plugin-name>
+ksbuilder install <plugin-name>
 ```

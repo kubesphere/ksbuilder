@@ -8,8 +8,8 @@ import (
 
 func newRootCmd(version string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ksnext",
-		Short: "ksnext is a command line interface for KubeSphere plugin system",
+		Use:   "ksbuilder",
+		Short: "ksbuilder is a command line interface for KubeSphere plugin system",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println(cmd.UsageString())
 

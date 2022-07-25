@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/chenz24/ksnext/pkg/project"
+	"github.com/chenz24/ksbuilder/pkg/project"
 	"github.com/spf13/cobra"
 )
 

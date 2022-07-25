@@ -15,7 +15,7 @@ type installOptions struct {
 
 func defaultPublishOptions() *installOptions {
 	return &installOptions{
-		namespace: "wayne-test",
+		namespace: "plugin-default",
 	}
 }
 

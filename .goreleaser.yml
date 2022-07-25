@@ -8,7 +8,7 @@ before:
 
 builds:
   -
-    binary: ksnext
+    binary: ksbuilder
     ldflags: -s -w -X main.version={{ .Version }}
     goos:
       - linux
@@ -25,8 +25,8 @@ universal_binaries:
 
 brews:
   -
-    name: ksnext
-    homepage: "https://github.com/chenz24/ksnext"
+    name: ksbuilder
+    homepage: "https://github.com/kubesphere/ksbuilder"
     tap:
       owner: chenz24
       name: homebrew-tap
@@ -50,9 +50,8 @@ checksum:
 #
 #nfpms:
 #  -
-#    vendor: ksc
-#    homepage:  https://github.com/chenz24/ksnext
-#    maintainer: "ChenZhen chenz8606@gmail.com"
+#    vendor: KubeSphere
+#    homepage:  https://github.com/kubesphere/ksbuilder
 #    description: "A command line interface for KubeSphere plugin system"
 #    license: GPL-3.0
 #    formats:
