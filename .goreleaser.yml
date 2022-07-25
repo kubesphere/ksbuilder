@@ -28,7 +28,7 @@ brews:
     name: ksbuilder
     homepage: "https://github.com/kubesphere/ksbuilder"
     tap:
-      owner: chenz24
+      owner: kubesphere
       name: homebrew-tap
     commit_author:
       name: chenz24
