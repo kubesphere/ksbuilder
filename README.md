@@ -5,12 +5,12 @@
 // init a project
 ksbuilder init <project-directory>
 ```
-## create plugin charts
+## Create a plugin directory
 ```
 ksbuilder create <plugin-name>
 ```
 
-## install plugin
+## Install plugin
 ```
 ksbuilder install <plugin-name>
 ```
