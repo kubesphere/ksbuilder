@@ -1,4 +1,4 @@
-module github.com/chenz24/ksbuilder
+module github.com/kubesphere/ksbuilder
 
 go 1.17
 

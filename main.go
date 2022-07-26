@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chenz24/ksbuilder/cmd"
+	"github.com/kubesphere/ksbuilder/cmd"
 )
 
 var version = "0.0.1"

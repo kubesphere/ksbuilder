@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/chenz24/ksbuilder/pkg/project"
+	"github.com/kubesphere/ksbuilder/pkg/project"
 	"github.com/spf13/cobra"
 )
 
