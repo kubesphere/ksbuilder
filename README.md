@@ -7,10 +7,11 @@ ksbuilder init <project-directory>
 ```
 ## Create a KubeSphere extension directory
 ```
-ksbuilder create <plugin-name>
+cd <project-directory>
+ksbuilder create <extension-name>
 ```
 
 ## Install plugin
 ```
-ksbuilder install <plugin-name>
+ksbuilder install <extension-name>
 ```
