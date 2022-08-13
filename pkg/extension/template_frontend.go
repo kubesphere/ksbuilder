@@ -1,7 +1,7 @@
-package plugin
+package extension
 
 const (
-	_tplFrontendChartYaml = `apiVersion: v2
+	_tplFrontendChartYaml = `apiVersion: v1
 name: frontend
 description: Frontend of [[ .Name ]] plugin.
 type: application
@@ -9,7 +9,7 @@ version: 0.0.1
 appVersion: "0.0.1"
 home: https://kubesphere.io
 sources:
-  - https://github.com/chenz24/console
+  - https://github.com/kubesphere
 annotations:
   extensions.kubesphere.io/foo: bar
 `
@@ -20,7 +20,7 @@ annotations:
 replicaCount: 1
 
 image:
-  repository: ks-plugin
+  repository: ks-extension-demo-frontend
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: "latest"

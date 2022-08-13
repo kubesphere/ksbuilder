@@ -5,7 +5,7 @@
 // init a project
 ksbuilder init <project-directory>
 ```
-## Create a plugin directory
+## Create a KubeSphere extension directory
 ```
 ksbuilder create <plugin-name>
 ```

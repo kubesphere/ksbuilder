@@ -3,7 +3,7 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/kubesphere/ksbuilder/pkg/plugin"
+	"github.com/kubesphere/ksbuilder/pkg/extension"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"os"
@@ -15,10 +15,10 @@ type promptContent struct {
 	label    string
 }
 
-func newPluginCmd() *cobra.Command {
+func newExtensionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "create",
-		Short:        "Create a new plugin",
+		Short:        "Create a new KubeSphere extension",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(0),
 		RunE:         run,
@@ -29,14 +29,14 @@ func newPluginCmd() *cobra.Command {
 
 func run(cmd *cobra.Command, args []string) error {
 	pluginNamePrompt := promptContent{
-		errorMsg: "plugin name can't be empty",
+		errorMsg: "Extension name can't be empty",
 		label:    "Please input plugin name: ",
 	}
 	name := promptGetInput(pluginNamePrompt)
 
 	pluginDescPrompt := promptContent{
-		errorMsg: "plugin description can't be empty",
-		label:    "Please input plugin description: ",
+		errorMsg: "Extension description can't be empty",
+		label:    "Please input extension description: ",
 	}
 	desc := promptGetInput(pluginDescPrompt)
 
@@ -47,8 +47,8 @@ func run(cmd *cobra.Command, args []string) error {
 	category := promptGetSelect(categoryPromptContent)
 
 	pluginAuthorPrompt := promptContent{
-		errorMsg: "plugin author can't be empty",
-		label:    "Please input plugin author: ",
+		errorMsg: "Extension author can't be empty",
+		label:    "Please input extension author: ",
 	}
 	author := promptGetInput(pluginAuthorPrompt)
 
@@ -58,7 +58,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	email := promptGetInput(pluginEmailPrompt)
 
-	pluginConfig := plugin.Config{
+	pluginConfig := extension.Config{
 		Name:     name,
 		Desc:     desc,
 		Category: category,
@@ -68,12 +68,12 @@ func run(cmd *cobra.Command, args []string) error {
 
 	pwd, _ := os.Getwd()
 	p := path.Join(pwd, name)
-	if err := plugin.Create(p, pluginConfig); err != nil {
+	if err := extension.Create(p, pluginConfig); err != nil {
 		return err
 	}
 
 	fmt.Printf("Directory: %s\n\n", p)
-	fmt.Println("The plugin charts has been created.")
+	fmt.Println("The extension charts has been created.")
 
 	return nil
 }
@@ -111,7 +111,7 @@ func promptGetInput(pc promptContent) string {
 }
 
 func promptGetSelect(pc promptContent) string {
-	items := []string{"Performance", "Monitoring", "Logging", "Messaging"}
+	items := []string{"Performance", "Monitoring", "Logging", "Messaging", "Networking", "Security", "Database", "Storage", "Others"}
 	index := -1
 	var result string
 	var err error

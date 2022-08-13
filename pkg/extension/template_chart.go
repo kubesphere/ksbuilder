@@ -1,4 +1,4 @@
-package plugin
+package extension
 
 const (
 	_tplChartYaml = `apiVersion: v1
@@ -11,7 +11,7 @@ keywords:
   - [[ .Category ]]
 home: https://kubesphere.io
 sources:
-  - https://github.com/chenz24/console
+  - https://github.com/kubesphere
 dependencies:
   - name: frontend
     condition: frontend.enabled
