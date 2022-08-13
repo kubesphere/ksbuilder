@@ -9,7 +9,7 @@ import (
 func newRootCmd(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ksbuilder",
-		Short: "ksbuilder is a command line interface for KubeSphere plugin system",
+		Short: "ksbuilder is a command line interface for KubeSphere extension system",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fmt.Println(cmd.UsageString())
 
@@ -17,12 +17,12 @@ func newRootCmd(version string) *cobra.Command {
 		},
 	}
 
-	cmd.AddCommand(newVersionCmd(version)) // version subcommand
-	cmd.AddCommand(newProjectCmd())        // init_project subcommand
-	cmd.AddCommand(newPluginCmd())         // create_plugin subcommand
-	cmd.AddCommand(installPluginCmd())     // publish_plugin subcommand
-	cmd.AddCommand(uninstallPluginCmd())   // uninstall_plugin subcommand
-	cmd.AddCommand(upgradePluginCmd())     // upgrade_plugin subcommand
+	cmd.AddCommand(newVersionCmd(version))  // version subcommand
+	cmd.AddCommand(newProjectCmd())         // init_project subcommand
+	cmd.AddCommand(newExtensionCmd())       // create_plugin subcommand
+	cmd.AddCommand(installExtensionCmd())   // publish_plugin subcommand
+	cmd.AddCommand(uninstallExtensionCmd()) // uninstall_plugin subcommand
+	cmd.AddCommand(updateExtensionCmd())    // update_plugin subcommand
 
 	return cmd
 }

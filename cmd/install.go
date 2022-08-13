@@ -15,16 +15,16 @@ type installOptions struct {
 
 func defaultPublishOptions() *installOptions {
 	return &installOptions{
-		namespace: "plugin-default",
+		namespace: "extension-default",
 	}
 }
 
-func installPluginCmd() *cobra.Command {
+func installExtensionCmd() *cobra.Command {
 	o := defaultPublishOptions()
 
 	cmd := &cobra.Command{
 		Use:          "install",
-		Short:        "install a plugin",
+		Short:        "install a extension",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(1),
 		RunE:         o.publish,
@@ -38,7 +38,7 @@ func installPluginCmd() *cobra.Command {
 func (o *installOptions) publish(cmd *cobra.Command, args []string) error {
 	pwd, _ := os.Getwd()
 	p := path.Join(pwd, args[0])
-	fmt.Printf("install plugin %s\n", args[0])
+	fmt.Printf("install extension %s\n", args[0])
 
 	namespace := o.namespace
 
@@ -52,12 +52,12 @@ func (o *installOptions) publish(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func uninstallPluginCmd() *cobra.Command {
+func uninstallExtensionCmd() *cobra.Command {
 	o := defaultPublishOptions()
 
 	cmd := &cobra.Command{
 		Use:          "uninstall",
-		Short:        "uninstall a plugin",
+		Short:        "uninstall a extension",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(1),
 		RunE:         o.uninstall,
@@ -69,7 +69,7 @@ func uninstallPluginCmd() *cobra.Command {
 }
 
 func (o *installOptions) uninstall(cmd *cobra.Command, args []string) error {
-	fmt.Printf("uninstall plugin %s\n", args[0])
+	fmt.Printf("uninstall extension %s\n", args[0])
 
 	namespace := o.namespace
 
@@ -83,15 +83,15 @@ func (o *installOptions) uninstall(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func upgradePluginCmd() *cobra.Command {
+func updateExtensionCmd() *cobra.Command {
 	o := defaultPublishOptions()
 
 	cmd := &cobra.Command{
-		Use:          "upgrade",
-		Short:        "upgrade a plugin",
+		Use:          "update",
+		Short:        "update a extension",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(1),
-		RunE:         o.upgrade,
+		RunE:         o.update,
 	}
 
 	cmd.Flags().StringVarP(&o.namespace, "namespace", "n", o.namespace, "namespace")
@@ -99,8 +99,8 @@ func upgradePluginCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *installOptions) upgrade(cmd *cobra.Command, args []string) error {
-	fmt.Printf("upgrade plugin %s\n", args[0])
+func (o *installOptions) update(cmd *cobra.Command, args []string) error {
+	fmt.Printf("update extension %s\n", args[0])
 
 	pwd, _ := os.Getwd()
 	p := path.Join(pwd, args[0])

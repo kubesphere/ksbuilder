@@ -22,7 +22,7 @@ func newProjectCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:          "init",
-		Short:        "Init a new project",
+		Short:        "Init a new KubeSphere extension project",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(1),
 		RunE:         o.run,
