@@ -22,7 +22,7 @@ func newRootCmd(version string) *cobra.Command {
 	cmd.AddCommand(newExtensionCmd())       // create_plugin subcommand
 	cmd.AddCommand(installExtensionCmd())   // publish_plugin subcommand
 	cmd.AddCommand(uninstallExtensionCmd()) // uninstall_plugin subcommand
-	cmd.AddCommand(upgradeExtensionCmd())   // upgrade_plugin subcommand
+	cmd.AddCommand(updateExtensionCmd())    // update_plugin subcommand
 
 	return cmd
 }

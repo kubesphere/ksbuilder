@@ -83,15 +83,15 @@ func (o *installOptions) uninstall(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func upgradeExtensionCmd() *cobra.Command {
+func updateExtensionCmd() *cobra.Command {
 	o := defaultPublishOptions()
 
 	cmd := &cobra.Command{
-		Use:          "upgrade",
-		Short:        "upgrade a extension",
+		Use:          "update",
+		Short:        "update a extension",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(1),
-		RunE:         o.upgrade,
+		RunE:         o.update,
 	}
 
 	cmd.Flags().StringVarP(&o.namespace, "namespace", "n", o.namespace, "namespace")
@@ -99,8 +99,8 @@ func upgradeExtensionCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *installOptions) upgrade(cmd *cobra.Command, args []string) error {
-	fmt.Printf("upgrade extension %s\n", args[0])
+func (o *installOptions) update(cmd *cobra.Command, args []string) error {
+	fmt.Printf("update extension %s\n", args[0])
 
 	pwd, _ := os.Getwd()
 	p := path.Join(pwd, args[0])
