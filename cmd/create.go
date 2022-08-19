@@ -28,17 +28,17 @@ func newExtensionCmd() *cobra.Command {
 }
 
 func run(cmd *cobra.Command, args []string) error {
-	pluginNamePrompt := promptContent{
+	extensionNamePrompt := promptContent{
 		errorMsg: "Extension name can't be empty",
-		label:    "Please input plugin name: ",
+		label:    "Please input extension name: ",
 	}
-	name := promptGetInput(pluginNamePrompt)
+	name := promptGetRequiredInput(extensionNamePrompt)
 
-	pluginDescPrompt := promptContent{
+	extensionDescPrompt := promptContent{
 		errorMsg: "Extension description can't be empty",
-		label:    "Please input extension description: ",
+		label:    "Please input extension description",
 	}
-	desc := promptGetInput(pluginDescPrompt)
+	desc := promptGetInput(extensionDescPrompt)
 
 	categoryPromptContent := promptContent{
 		"Please provide a category.",
@@ -46,19 +46,19 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	category := promptGetSelect(categoryPromptContent)
 
-	pluginAuthorPrompt := promptContent{
+	authorPrompt := promptContent{
 		errorMsg: "Extension author can't be empty",
-		label:    "Please input extension author: ",
+		label:    "Please input extension author",
 	}
-	author := promptGetInput(pluginAuthorPrompt)
+	author := promptGetInput(authorPrompt)
 
-	pluginEmailPrompt := promptContent{
+	emailPrompt := promptContent{
 		errorMsg: "Email can't be empty",
-		label:    "Please input Email: ",
+		label:    "Please input Email",
 	}
-	email := promptGetInput(pluginEmailPrompt)
+	email := promptGetInput(emailPrompt)
 
-	pluginConfig := extension.Config{
+	extensionConfig := extension.Config{
 		Name:     name,
 		Desc:     desc,
 		Category: category,
@@ -68,7 +68,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	pwd, _ := os.Getwd()
 	p := path.Join(pwd, name)
-	if err := extension.Create(p, pluginConfig); err != nil {
+	if err := extension.Create(p, extensionConfig); err != nil {
 		return err
 	}
 
@@ -79,6 +79,15 @@ func run(cmd *cobra.Command, args []string) error {
 }
 
 func promptGetInput(pc promptContent) string {
+	prompt := promptui.Prompt{
+		Label: pc.label,
+	}
+
+	result, _ := prompt.Run()
+	return result
+}
+
+func promptGetRequiredInput(pc promptContent) string {
 	validate := func(input string) error {
 		if len(input) <= 0 {
 			return errors.New(pc.errorMsg)
@@ -105,7 +114,7 @@ func promptGetInput(pc promptContent) string {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Input: %s\n", result)
+	//fmt.Printf("Input: %s\n", result)
 
 	return result
 }
@@ -117,10 +126,10 @@ func promptGetSelect(pc promptContent) string {
 	var err error
 
 	for index < 0 {
-		prompt := promptui.SelectWithAdd{
-			Label:    pc.label,
-			Items:    items,
-			AddLabel: "Other",
+		prompt := promptui.Select{
+			Label: pc.label,
+			Items: items,
+			//AddLabel: "Other",
 		}
 
 		index, result, err = prompt.Run()
@@ -135,7 +144,7 @@ func promptGetSelect(pc promptContent) string {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Input: %s\n", result)
+	//fmt.Printf("Input: %s\n", result)
 
 	return result
 }

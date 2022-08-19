@@ -52,7 +52,7 @@ checksum:
 #  -
 #    vendor: KubeSphere
 #    homepage:  https://github.com/kubesphere/ksbuilder
-#    description: "A command line interface for KubeSphere plugin system"
+#    description: "A command line interface for KubeSphere extension system"
 #    license: GPL-3.0
 #    formats:
 #      - apk

@@ -11,7 +11,7 @@ cd <project-directory>
 ksbuilder create <extension-name>
 ```
 
-## Install plugin
+## Install extension
 ```
 ksbuilder install <extension-name>
 ```
