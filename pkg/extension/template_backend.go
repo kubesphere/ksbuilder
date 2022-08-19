@@ -3,7 +3,7 @@ package extension
 const (
 	_tplBackendChartYaml = `apiVersion: v1
 name: backend
-description: Backend of [[ .Name ]] plugin.
+description: Backend of [[ .Name ]] extension.
 type: application
 version: 0.0.1
 appVersion: "0.0.1"

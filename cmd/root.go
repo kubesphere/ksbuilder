@@ -19,10 +19,10 @@ func newRootCmd(version string) *cobra.Command {
 
 	cmd.AddCommand(newVersionCmd(version))  // version subcommand
 	cmd.AddCommand(newProjectCmd())         // init_project subcommand
-	cmd.AddCommand(newExtensionCmd())       // create_plugin subcommand
-	cmd.AddCommand(installExtensionCmd())   // publish_plugin subcommand
-	cmd.AddCommand(uninstallExtensionCmd()) // uninstall_plugin subcommand
-	cmd.AddCommand(updateExtensionCmd())    // update_plugin subcommand
+	cmd.AddCommand(newExtensionCmd())       // create_extension subcommand
+	cmd.AddCommand(installExtensionCmd())   // publish_extension subcommand
+	cmd.AddCommand(uninstallExtensionCmd()) // uninstall_extension subcommand
+	cmd.AddCommand(updateExtensionCmd())    // update_extension subcommand
 
 	return cmd
 }
