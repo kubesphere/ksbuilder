@@ -42,9 +42,12 @@ func (o *installOptions) publish(cmd *cobra.Command, args []string) error {
 
 	namespace := o.namespace
 
-	out, err := exec.Command("helm", "install", "--create-namespace", "-n", namespace, args[0], p).Output()
+	installCmd := exec.Command("helm", "install", "--create-namespace", "-n", namespace, args[0], p)
+	out, err := installCmd.CombinedOutput()
+
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(string(out))
+		log.Fatalf("cmd.Run() failed with %s", err)
 	}
 
 	fmt.Println(string(out))
@@ -73,9 +76,11 @@ func (o *installOptions) uninstall(cmd *cobra.Command, args []string) error {
 
 	namespace := o.namespace
 
-	out, err := exec.Command("helm", "uninstall", "-n", namespace, args[0]).Output()
+	uninstallCmd := exec.Command("helm", "uninstall", "-n", namespace, args[0])
+	out, err := uninstallCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(string(out))
+		log.Fatalf("cmd.Run() failed with %s", err)
 	}
 
 	fmt.Println(string(out))
@@ -106,9 +111,11 @@ func (o *installOptions) update(cmd *cobra.Command, args []string) error {
 	p := path.Join(pwd, args[0])
 	namespace := o.namespace
 
-	out, err := exec.Command("helm", "upgrade", "-n", namespace, args[0], p).Output()
+	uninstallCmd := exec.Command("helm", "upgrade", "-n", namespace, args[0], p)
+	out, err := uninstallCmd.CombinedOutput()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(string(out))
+		log.Fatalf("cmd.Run() failed with %s", err)
 	}
 
 	fmt.Println(string(out))
