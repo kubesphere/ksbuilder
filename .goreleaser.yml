@@ -31,8 +31,8 @@ brews:
       owner: kubesphere
       name: homebrew-tap
     commit_author:
-      name: chenz24
-      email: chenz8606@gmail.com
+      name: kubesphere
+      email: info@kubesphere.io
 
 checksum:
   name_template: 'checksums.txt'
