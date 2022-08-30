@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func newRootCmd(version string) *cobra.Command {
+func NewRootCmd(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ksbuilder",
 		Short: "ksbuilder is a command line interface for KubeSphere extension system",
@@ -29,7 +29,7 @@ func newRootCmd(version string) *cobra.Command {
 
 // Execute invokes the command.
 func Execute(version string) error {
-	if err := newRootCmd(version).Execute(); err != nil {
+	if err := NewRootCmd(version).Execute(); err != nil {
 		return fmt.Errorf("error executing root command: %w", err)
 	}
 
