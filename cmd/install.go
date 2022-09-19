@@ -24,7 +24,7 @@ func installExtensionCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:          "install",
-		Short:        "install a extension",
+		Short:        "install an extension",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(1),
 		RunE:         o.publish,
@@ -60,7 +60,7 @@ func uninstallExtensionCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:          "uninstall",
-		Short:        "uninstall a extension",
+		Short:        "uninstall an extension",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(1),
 		RunE:         o.uninstall,
