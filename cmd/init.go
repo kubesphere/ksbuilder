@@ -5,8 +5,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/kubesphere/ksbuilder/pkg/project"
 	"github.com/spf13/cobra"
+
+	"github.com/kubesphere/ksbuilder/pkg/project"
 )
 
 type projectOptions struct {
@@ -17,7 +18,7 @@ func defaultProjectOptions() *projectOptions {
 	return &projectOptions{}
 }
 
-func newProjectCmd() *cobra.Command {
+func initProjectCmd() *cobra.Command {
 	o := defaultProjectOptions()
 
 	cmd := &cobra.Command{

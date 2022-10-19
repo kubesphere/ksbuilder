@@ -21,3 +21,4 @@ coverage.out
 /dist
 
 .envrc
+/ksbuilder

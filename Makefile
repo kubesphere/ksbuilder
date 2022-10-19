@@ -1,4 +1,4 @@
-projectname?=ksc
+projectname?=ksbuilder
 
 default: help
 
