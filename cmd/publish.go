@@ -52,13 +52,13 @@ func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	command := exec.Command("kubectl", "apply", "-f", filePath)
-	out, err := command.CombinedOutput()
-	if err != nil {
-		return err
-	}
+	command := exec.Command("bash", "-c", fmt.Sprintf(`
+kubectl apply -f - <<EOF
+%s
+EOF`, ext.ToKubernetesResources()))
 
+	out, err := command.CombinedOutput()
 	fmt.Printf(string(out))
 
-	return nil
+	return err
 }
