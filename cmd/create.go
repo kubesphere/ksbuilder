@@ -3,11 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/kubesphere/ksbuilder/pkg/extension"
-	"github.com/manifoldco/promptui"
-	"github.com/spf13/cobra"
 	"os"
 	"path"
+
+	"github.com/manifoldco/promptui"
+	"github.com/spf13/cobra"
+
+	"github.com/kubesphere/ksbuilder/pkg/extension"
 )
 
 type promptContent struct {
@@ -15,7 +17,7 @@ type promptContent struct {
 	label    string
 }
 
-func newExtensionCmd() *cobra.Command {
+func createExtensionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:          "create",
 		Short:        "Create a new KubeSphere extension",
