@@ -2,7 +2,6 @@ package extension
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"strings"
 	"text/template"
@@ -17,9 +16,10 @@ type Config struct {
 }
 
 const (
-	_tplKeyChartYaml = iota
+	_tplKeyExtensionYaml = iota
 	_tplKeyValuesYaml
 	_tplKeyHelmignore
+	_tplKeyFavicon
 	_tplKeyFrontendChartYaml
 	_tplKeyFrontendChartValues
 	_tplKeyFrontendDeploymentYaml
@@ -41,9 +41,10 @@ const (
 var (
 	// files key => path
 	files = map[int]string{
-		_tplKeyChartYaml:              "/Chart.yaml",
+		_tplKeyExtensionYaml:          "/extension.yaml",
 		_tplKeyValuesYaml:             "/values.yaml",
 		_tplKeyHelmignore:             "/.helmignore",
+		_tplKeyFavicon:                "/favicon.svg",
 		_tplKeyFrontendChartYaml:      "/charts/frontend/Chart.yaml",
 		_tplKeyFrontendChartValues:    "/charts/frontend/values.yaml",
 		_tplKeyFrontendDeploymentYaml: "/charts/frontend/templates/deployment.yaml",
@@ -63,9 +64,10 @@ var (
 	}
 	// tpls key => content
 	tpls = map[int]string{
-		_tplKeyChartYaml:              _tplChartYaml,
-		_tplKeyValuesYaml:             _tplValuesYaml,
-		_tplKeyHelmignore:             _tplHelmignore,
+		_tplKeyExtensionYaml:          tplExtensionYaml,
+		_tplKeyValuesYaml:             tplValuesYaml,
+		_tplKeyHelmignore:             tplHelmignore,
+		_tplKeyFavicon:                tplFavicon,
 		_tplKeyFrontendChartYaml:      _tplFrontendChartYaml,
 		_tplKeyFrontendChartValues:    _tplFrontendValuesYaml,
 		_tplKeyFrontendDeploymentYaml: _tplFrontendDeploymentYaml,
@@ -110,7 +112,7 @@ func write(name, tpl string, data interface{}) (err error) {
 	if err != nil {
 		return
 	}
-	return ioutil.WriteFile(name, body, 0644)
+	return os.WriteFile(name, body, 0644)
 }
 
 func parse(s string, data interface{}) ([]byte, error) {
