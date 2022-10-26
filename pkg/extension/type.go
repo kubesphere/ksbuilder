@@ -3,6 +3,7 @@ package extension
 import (
 	"bytes"
 	"encoding/base64"
+	"fmt"
 	"mime"
 	"net/http"
 	"os"
@@ -143,7 +144,10 @@ kind: ExtensionVersion
 metadata:
   name: {{.Name}}-{{.Version}}
 spec:
-  chartURL: http://catalog-builtin.kubesphere-system.svc:8080/sharing-secret-v0.1.0-alpha.1.tgz
+  chartDataRef: 
+    namespace: kubesphere-system
+    name: extension-{{.Name}}-{{.Version}}-chart
+    key: chart.tgz
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
   home: {{.Home | quote}}
@@ -166,7 +170,7 @@ func (ext *Extension) ToKubernetesResources() []byte {
 		b.Reset()
 	}()
 
-	var cmName = "extension-" + ext.Metadata.Name + "-chart"
+	var cmName = fmt.Sprintf("extension-%s-%s-chart", ext.Metadata.Name, ext.Metadata.Version)
 
 	var cm = v1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
