@@ -5,11 +5,19 @@ const (
 name: [[ .Name ]]
 description: [[ .Desc ]]
 version: 0.0.1
+displayName:
+  zh-Hans: 示例扩展组件
+  en: Sample Extension
+description:
+  zh-Hans: 这是一个示例扩展组件，这是它的描述
+  en: This is a sample extension, and this is its description
 keywords:
   - [[ .Category ]]
 home: https://kubesphere.io
 sources:
   - https://github.com/kubesphere
+kubeVersion: ">= 1.19.0"
+ksVersion: ">= 4.0.0"
 dependencies:
   - name: frontend
     condition: frontend.enabled

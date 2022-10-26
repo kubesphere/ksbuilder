@@ -134,6 +134,7 @@ metadata:
 spec:
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
+  icon: {{.Icon | quote}}
 `)
 	if err != nil {
 		panic(err)
