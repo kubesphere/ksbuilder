@@ -19,7 +19,7 @@ import (
 )
 
 const LanguageCodeEn = "en"
-const LanguageCodeZhCn = "zh-cn"
+const LanguageCodeZh = "zh"
 
 type LanguageCode string
 type LocaleString string
@@ -29,8 +29,8 @@ func (l Locales) Default() string {
 	if en, ok := l[LanguageCodeEn]; ok {
 		return string(en)
 	}
-	if zhCn, ok := l[LanguageCodeZhCn]; ok {
-		return string(zhCn)
+	if zh, ok := l[LanguageCodeZh]; ok {
+		return string(zh)
 	}
 	// pick up the first value
 	for _, ls := range l {
@@ -134,6 +134,9 @@ metadata:
 spec:
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
+  icon: {{.Icon | quote}}
+status:
+  recommendVersion: {{.Version}}
 `)
 	if err != nil {
 		panic(err)
@@ -143,6 +146,8 @@ apiVersion: kubesphere.io/v1alpha1
 kind: ExtensionVersion
 metadata:
   name: {{.Name}}-{{.Version}}
+  labels:
+    kubesphere.io/extension-ref: {{.Name}}
 spec:
   chartDataRef: 
     namespace: kubesphere-system
