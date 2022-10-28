@@ -20,6 +20,8 @@ const (
 	_tplKeyValuesYaml
 	_tplKeyHelmignore
 	_tplKeyFavicon
+	_tplKeyReadmeZh
+	_tplKeyReadmeEn
 	_tplKeyFrontendChartYaml
 	_tplKeyFrontendChartValues
 	_tplKeyFrontendDeploymentYaml
@@ -45,6 +47,8 @@ var (
 		_tplKeyValuesYaml:             "/values.yaml",
 		_tplKeyHelmignore:             "/.helmignore",
 		_tplKeyFavicon:                "/favicon.svg",
+		_tplKeyReadmeZh:               "/README_zh.md",
+		_tplKeyReadmeEn:               "/README.md",
 		_tplKeyFrontendChartYaml:      "/charts/frontend/Chart.yaml",
 		_tplKeyFrontendChartValues:    "/charts/frontend/values.yaml",
 		_tplKeyFrontendDeploymentYaml: "/charts/frontend/templates/deployment.yaml",
@@ -68,6 +72,8 @@ var (
 		_tplKeyValuesYaml:             tplValuesYaml,
 		_tplKeyHelmignore:             tplHelmignore,
 		_tplKeyFavicon:                tplFavicon,
+		_tplKeyReadmeZh:               tplReadmeZh,
+		_tplKeyReadmeEn:               tplReadmeEn,
 		_tplKeyFrontendChartYaml:      _tplFrontendChartYaml,
 		_tplKeyFrontendChartValues:    _tplFrontendValuesYaml,
 		_tplKeyFrontendDeploymentYaml: _tplFrontendDeploymentYaml,

@@ -186,8 +186,8 @@ func (ext *Extension) ToKubernetesResources() []byte {
 			Name:      cmName,
 			Namespace: "kubesphere-system",
 		},
-		Data: map[string]string{
-			"chart.tgz": base64.StdEncoding.EncodeToString(ext.ChartData),
+		BinaryData: map[string][]byte{
+			"chart.tgz": ext.ChartData,
 		},
 	}
 	cmByte, err := yaml.Marshal(cm)
