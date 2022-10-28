@@ -3,7 +3,6 @@ package extension
 const (
 	tplExtensionYaml = `apiVersion: v1
 name: [[ .Name ]]
-description: [[ .Desc ]]
 version: 0.1.0
 displayName:
   zh: 示例扩展组件

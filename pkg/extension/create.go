@@ -9,7 +9,6 @@ import (
 
 type Config struct {
 	Name     string
-	Desc     string
 	Author   string
 	Email    string
 	Category string

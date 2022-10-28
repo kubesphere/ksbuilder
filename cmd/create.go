@@ -36,12 +36,6 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 	name := promptGetRequiredInput(extensionNamePrompt)
 
-	extensionDescPrompt := promptContent{
-		errorMsg: "Extension description can't be empty",
-		label:    "Please input extension description",
-	}
-	desc := promptGetInput(extensionDescPrompt)
-
 	categoryPromptContent := promptContent{
 		"Please provide a category.",
 		fmt.Sprintf("What category does %s belong to?", name),
@@ -62,7 +56,6 @@ func run(cmd *cobra.Command, args []string) error {
 
 	extensionConfig := extension.Config{
 		Name:     name,
-		Desc:     desc,
 		Category: category,
 		Author:   author,
 		Email:    email,
