@@ -146,15 +146,13 @@ spec:
 kind: APIService
 metadata:
   name: v1alpha1.[[ .Name ]].kubesphere.io
-  annotations:
-    meta.helm.sh/release-name: [[ .Name ]]-0.10.0
 spec:
   group: [[ .Name ]].kubesphere.io                               # API Group
   version: v1alpha1                                         # API Version
-  endpoint: http://{{ include "backend.fullname" . }}.{{ .Release.Namespace }}.svc  # backend
+  url: http://{{ include "backend.fullname" . }}.{{ .Release.Namespace }}.svc  # backend
 #  insecureSkipTLSVerify: true
 status:
-  enabled: true
+  state: Available
 `
 	_tplBackendNOTESTxt = `You have deployed the following release: {{ .Release.Name }}.`
 	_tplBackendHelps    = `{{/*
