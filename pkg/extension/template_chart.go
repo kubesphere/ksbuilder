@@ -27,13 +27,13 @@ icon: ./favicon.svg
 	tplValuesYaml = `frontend:
   enabled: true
   image:
-    repository: 
+    repository: kubespheredev/employee-frontend
     tag: latest
 
 backend:
   enabled: true
   image:
-    repository: 
+    repository: kubespheredev/employee-api
     tag: latest
 `
 	tplHelmignore = `# Patterns to ignore when building packages.
