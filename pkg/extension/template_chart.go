@@ -16,7 +16,7 @@ home: https://kubesphere.io
 sources:
   - https://github.com/kubesphere
 kubeVersion: ">=1.19.0"
-ksVersion: ">=4.0.0"
+ksVersion: ">=3.0.0"
 dependencies:
   - name: frontend
     condition: frontend.enabled
