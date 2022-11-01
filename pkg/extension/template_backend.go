@@ -147,7 +147,7 @@ kind: APIService
 metadata:
   name: v1alpha1.[[ .Name ]].kubesphere.io
 spec:
-  group: [[ .Name ]].kubesphere.io                               # API Group
+  group: employee.kubesphere.io                               # API Group
   version: v1alpha1                                         # API Version
   url: http://{{ include "backend.fullname" . }}.{{ .Release.Namespace }}.svc  # backend
 #  insecureSkipTLSVerify: true
