@@ -136,7 +136,7 @@ spec:
   displayName: {{.DisplayName | toJson}}
   icon: {{.Icon | quote}}
 status:
-  recommendVersion: {{.Version}}
+  recommendedVersion: {{.Version}}
 `)
 	if err != nil {
 		panic(err)
