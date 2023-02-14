@@ -16,6 +16,7 @@ type Config struct {
 
 const (
 	_tplKeyExtensionYaml = iota
+	_tplKeyPermissionYaml
 	_tplKeyValuesYaml
 	_tplKeyHelmignore
 	_tplKeyFavicon
@@ -43,6 +44,7 @@ var (
 	// files key => path
 	files = map[int]string{
 		_tplKeyExtensionYaml:          "/extension.yaml",
+		_tplKeyPermissionYaml:         "/permission.yaml",
 		_tplKeyValuesYaml:             "/values.yaml",
 		_tplKeyHelmignore:             "/.helmignore",
 		_tplKeyFavicon:                "/favicon.svg",
@@ -68,6 +70,7 @@ var (
 	// tpls key => content
 	tpls = map[int]string{
 		_tplKeyExtensionYaml:          tplExtensionYaml,
+		_tplKeyPermissionYaml:         tplPermissionYaml,
 		_tplKeyValuesYaml:             tplValuesYaml,
 		_tplKeyHelmignore:             tplHelmignore,
 		_tplKeyFavicon:                tplFavicon,

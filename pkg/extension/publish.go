@@ -6,6 +6,7 @@ import (
 	"github.com/otiai10/copy"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -28,13 +29,35 @@ func LoadMetadata(path string) (*Metadata, error) {
 	return &metadata, nil
 }
 
+func LoadPermission(path string) (*rbacv1.ClusterRole, error) {
+	_, err := os.Stat(path + "/" + "permission.yaml")
+	if err == nil {
+		content, err := os.ReadFile(path + "/" + "permission.yaml")
+		if err != nil {
+			return nil, err
+		}
+		var clusterRole rbacv1.ClusterRole
+		err = yaml.Unmarshal(content, &clusterRole)
+		if err != nil {
+			return nil, err
+		}
+		return &clusterRole, nil
+	}
+	return nil, nil
+}
+
 func Load(path string) (*Extension, error) {
 	metadata, err := LoadMetadata(path)
 	if err != nil {
 		return nil, err
 	}
+	clusterRole, err := LoadPermission(path)
+	if err != nil {
+		return nil, err
+	}
 	var extension Extension
 	extension.Metadata = metadata
+	extension.ClusterRole = clusterRole
 	tempDir, err := os.MkdirTemp("", "chart")
 	if err != nil {
 		return nil, err
