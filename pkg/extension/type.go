@@ -14,7 +14,6 @@ import (
 	"github.com/Masterminds/sprig/v3"
 	"helm.sh/helm/v3/pkg/chart"
 	v1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
 )
@@ -117,7 +116,7 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 
 type Extension struct {
 	Metadata    *Metadata
-	ClusterRole *rbacv1.ClusterRole
+	Permissions []byte
 	ChartData   []byte
 }
 
@@ -207,15 +206,6 @@ func (ext *Extension) ToKubernetesResources() []byte {
 	err = extensionVersionTmpl.Execute(&b, ext.Metadata)
 	if err != nil {
 		panic(err)
-	}
-	if ext.ClusterRole != nil {
-		ext.ClusterRole.Name = fmt.Sprintf("%s%s%s", "kubesphere:", ext.Metadata.Name, ":helm-executor")
-		b.WriteString("\n---\n")
-		crByte, err := yaml.Marshal(ext.ClusterRole)
-		if err != nil {
-			panic(err)
-		}
-		b.Write(crByte)
 	}
 
 	return b.Bytes()

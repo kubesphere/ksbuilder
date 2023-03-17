@@ -24,22 +24,37 @@ dependencies:
     condition: backend.enabled
 icon: ./favicon.svg
 `
-	tplPermissionYaml = `apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: kubesphere:extension-name:helm-executor
+	tplPermissionsYaml = `kind: ClusterRole
+rules:
+  - verbs:
+      - 'create'
+      - 'patch'
+      - 'update'
+    apiGroups:
+      - 'extensions.kubesphere.io'
+    resources:
+      - '*'
+
+---
+kind: Role
 rules:
   - verbs:
       - '*'
     apiGroups:
       - ''
+      - 'apps'
+      - 'batch'
+      - 'app.k8s.io'
+      - 'autoscaling'
     resources:
       - '*'
-  - verbs: ["create", "list", "get"]
+  - verbs:
+      - '*'
     apiGroups:
-      - 'apiextensions.k8s.io'
+      - 'networking.k8s.io'
     resources:
-      - 'CustomResourceDefinition'
+      - 'ingresses'
+      - 'networkpolicies'
 `
 	tplValuesYaml = `frontend:
   enabled: true
