@@ -33,13 +33,8 @@ func Load(path string) (*Extension, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	if err != nil {
-		return nil, err
-	}
 	var extension Extension
 	extension.Metadata = metadata
-
 	tempDir, err := os.MkdirTemp("", "chart")
 	if err != nil {
 		return nil, err
