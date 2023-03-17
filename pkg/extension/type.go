@@ -115,9 +115,8 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 }
 
 type Extension struct {
-	Metadata    *Metadata
-	Permissions []byte
-	ChartData   []byte
+	Metadata  *Metadata
+	ChartData []byte
 }
 
 var (

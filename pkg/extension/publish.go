@@ -9,10 +9,7 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-const (
-	MetadataFilename    = "extension.yaml"
-	PermissionsFilename = "permissions.yaml"
-)
+const MetadataFilename = "extension.yaml"
 
 func LoadMetadata(path string) (*Metadata, error) {
 	content, err := os.ReadFile(path + "/" + MetadataFilename)
@@ -37,13 +34,11 @@ func Load(path string) (*Extension, error) {
 		return nil, err
 	}
 
-	permissions, err := os.ReadFile(path + "/" + PermissionsFilename)
 	if err != nil {
 		return nil, err
 	}
 	var extension Extension
 	extension.Metadata = metadata
-	extension.Permissions = permissions
 
 	tempDir, err := os.MkdirTemp("", "chart")
 	if err != nil {
