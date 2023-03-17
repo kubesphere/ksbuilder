@@ -24,6 +24,38 @@ dependencies:
     condition: backend.enabled
 icon: ./favicon.svg
 `
+	tplPermissionsYaml = `kind: ClusterRole
+rules:
+  - verbs:
+      - 'create'
+      - 'patch'
+      - 'update'
+    apiGroups:
+      - 'extensions.kubesphere.io'
+    resources:
+      - '*'
+
+---
+kind: Role
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - ''
+      - 'apps'
+      - 'batch'
+      - 'app.k8s.io'
+      - 'autoscaling'
+    resources:
+      - '*'
+  - verbs:
+      - '*'
+    apiGroups:
+      - 'networking.k8s.io'
+    resources:
+      - 'ingresses'
+      - 'networkpolicies'
+`
 	tplValuesYaml = `frontend:
   enabled: true
   image:
