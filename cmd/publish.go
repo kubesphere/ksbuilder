@@ -53,7 +53,7 @@ func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
 	}
 
 	command := exec.Command("bash", "-c", fmt.Sprintf(`
-kubectl apply -f - <<EOF
+kubectl apply --server-side=true -f - <<EOF
 %s
 EOF`, ext.ToKubernetesResources()))
 
