@@ -30,6 +30,7 @@ rules:
       - 'create'
       - 'patch'
       - 'update'
+      - 'get'
     apiGroups:
       - 'extensions.kubesphere.io'
     resources:
