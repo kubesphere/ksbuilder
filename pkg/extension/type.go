@@ -100,7 +100,7 @@ func (md *Metadata) LoadIcon(p string) error {
 func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 	var c = chart.Metadata{
 		Name:         md.Name,
-		APIVersion:   "v1",
+		APIVersion:   md.ApiVersion,
 		Version:      md.Version,
 		Keywords:     md.Keywords,
 		Sources:      md.Sources,
