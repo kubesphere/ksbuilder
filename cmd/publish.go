@@ -47,15 +47,11 @@ func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	filePath := path.Join(dir, "extension.yaml")
-	err = os.WriteFile(filePath, ext.ToKubernetesResources(), 0644)
-	if err != nil {
+	if err = os.WriteFile(filePath, ext.ToKubernetesResources(), 0644); err != nil {
 		return err
 	}
 
-	command := exec.Command("bash", "-c", fmt.Sprintf(`
-kubectl apply --server-side=true -f - <<EOF
-%s
-EOF`, ext.ToKubernetesResources()))
+	command := exec.Command("bash", "-c", fmt.Sprintf("kubectl apply --server-side=true -f %s", filePath))
 
 	out, err := command.CombinedOutput()
 	fmt.Printf(string(out))
