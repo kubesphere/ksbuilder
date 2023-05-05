@@ -60,13 +60,13 @@ rules:
 	tplValuesYaml = `frontend:
   enabled: true
   image:
-    repository: kubespheredev/employee-frontend
+    repository: kubespheredev/[[ .Name ]]-frontend
     tag: latest
 
 backend:
   enabled: true
   image:
-    repository: kubespheredev/employee-api
+    repository: kubespheredev/[[ .Name ]]-api
     tag: latest
 `
 	tplHelmignore = `# Patterns to ignore when building packages.

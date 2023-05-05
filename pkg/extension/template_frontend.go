@@ -145,7 +145,7 @@ metadata:
   name: {{ include "frontend.fullname" . }}-js-bundle
 spec:
   rawFrom:
-    url: http://{{ include "frontend.fullname" . }}.{{ .Release.Namespace }}.svc/dist/employee-frontend/index.js
+    url: http://{{ include "frontend.fullname" . }}.{{ .Release.Namespace }}.svc/dist/[[ .Name ]]-frontend/index.js
 status:
   state: Available
   link: /dist/{{ include "frontend.fullname" . }}/index.js
