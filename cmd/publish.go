@@ -12,6 +12,7 @@ import (
 )
 
 type publishOptions struct {
+	kubeconfig string
 }
 
 func defaultPublishOptions() *publishOptions {
@@ -28,7 +29,7 @@ func publishExtensionCmd() *cobra.Command {
 		Args:         cobra.ExactArgs(1),
 		RunE:         o.publish,
 	}
-
+	cmd.Flags().StringVar(&o.kubeconfig, "kubeconfig", "", "kubeconfig file path of the target cluster")
 	return cmd
 }
 
@@ -51,7 +52,11 @@ func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	command := exec.Command("bash", "-c", fmt.Sprintf("kubectl apply --server-side=true -f %s", filePath))
+	kubectlArgs := []string{"apply", "--server-side=true", "-f", filePath}
+	if o.kubeconfig != "" {
+		kubectlArgs = append(kubectlArgs, "--kubeconfig", o.kubeconfig)
+	}
+	command := exec.Command("kubectl", kubectlArgs...)
 
 	out, err := command.CombinedOutput()
 	fmt.Printf(string(out))
