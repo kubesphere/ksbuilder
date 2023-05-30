@@ -25,7 +25,6 @@ func createExtensionCmd() *cobra.Command {
 		Args:         cobra.ExactArgs(0),
 		RunE:         run,
 	}
-
 	return cmd
 }
 
@@ -109,8 +108,6 @@ func promptGetRequiredInput(pc promptContent) string {
 		os.Exit(1)
 	}
 
-	//fmt.Printf("Input: %s\n", result)
-
 	return result
 }
 
@@ -124,7 +121,6 @@ func promptGetSelect(pc promptContent) string {
 		prompt := promptui.Select{
 			Label: pc.label,
 			Items: items,
-			//AddLabel: "Other",
 		}
 
 		index, result, err = prompt.Run()
@@ -138,8 +134,6 @@ func promptGetSelect(pc promptContent) string {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 	}
-
-	//fmt.Printf("Input: %s\n", result)
 
 	return result
 }
