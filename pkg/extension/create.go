@@ -12,9 +12,10 @@ import (
 
 type Config struct {
 	Name     string
+	Category string
 	Author   string
 	Email    string
-	Category string
+	URL      string
 }
 
 //go:embed templates

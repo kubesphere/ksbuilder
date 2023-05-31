@@ -14,6 +14,10 @@ sources:
   - https://github.com/kubesphere
 kubeVersion: ">=1.19.0"
 ksVersion: ">=3.0.0"
+vendor:
+  name: "[[ .Author ]]"
+  email: "[[ .Email ]]"
+  url: "[[ .URL ]]"
 dependencies:
   - name: frontend
     condition: frontend.enabled
