@@ -49,6 +49,7 @@ type Metadata struct {
 	Version      string              `json:"version,omitempty"`
 	Keywords     []string            `json:"keywords,omitempty"`
 	Sources      []string            `json:"sources,omitempty"`
+	Vendor       *chart.Maintainer   `json:"vendor,omitempty"`
 	KubeVersion  string              `json:"kubeVersion,omitempty"`
 	KsVersion    string              `json:"ksVersion,omitempty"`
 	Home         string              `json:"home,omitempty"`
@@ -109,6 +110,7 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 		Dependencies: md.Dependencies,
 		Description:  md.Description.Default(),
 		Icon:         md.Icon,
+		Maintainers:  []*chart.Maintainer{md.Vendor},
 	}
 
 	return &c, nil
@@ -135,6 +137,7 @@ spec:
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
   icon: {{.Icon | quote}}
+  vendor: {{.Vendor | toJson}}
 status:
   recommendedVersion: {{.Version}}
 `)
