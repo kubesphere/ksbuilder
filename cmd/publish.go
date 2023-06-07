@@ -12,6 +12,7 @@ import (
 )
 
 type publishOptions struct {
+	kubeconfig string
 }
 
 func defaultPublishOptions() *publishOptions {
@@ -28,7 +29,7 @@ func publishExtensionCmd() *cobra.Command {
 		Args:         cobra.ExactArgs(1),
 		RunE:         o.publish,
 	}
-
+	cmd.Flags().StringVar(&o.kubeconfig, "kubeconfig", "", "kubeconfig file path of the target cluster")
 	return cmd
 }
 
@@ -46,16 +47,18 @@ func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	defer os.RemoveAll(dir) // nolint
+
 	filePath := path.Join(dir, "extension.yaml")
-	err = os.WriteFile(filePath, ext.ToKubernetesResources(), 0644)
-	if err != nil {
+	if err = os.WriteFile(filePath, ext.ToKubernetesResources(), 0644); err != nil {
 		return err
 	}
 
-	command := exec.Command("bash", "-c", fmt.Sprintf(`
-kubectl apply -f - <<EOF
-%s
-EOF`, ext.ToKubernetesResources()))
+	kubectlArgs := []string{"apply", "--server-side=true", "-f", filePath}
+	if o.kubeconfig != "" {
+		kubectlArgs = append(kubectlArgs, "--kubeconfig", o.kubeconfig)
+	}
+	command := exec.Command("kubectl", kubectlArgs...)
 
 	out, err := command.CombinedOutput()
 	fmt.Printf(string(out))

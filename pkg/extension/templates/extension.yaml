@@ -1,0 +1,26 @@
+apiVersion: v1
+name: [[ .Name ]]
+version: 0.1.0
+displayName:
+  zh: 示例扩展组件
+  en: Sample Extension
+description:
+  zh: 这是一个示例扩展组件，这是它的描述
+  en: This is a sample extension, and this is its description
+keywords:
+  - [[ .Category ]]
+home: https://kubesphere.io
+sources:
+  - https://github.com/kubesphere
+kubeVersion: ">=1.19.0"
+ksVersion: ">=3.0.0"
+vendor:
+  name: "[[ .Author ]]"
+  email: "[[ .Email ]]"
+  url: "[[ .URL ]]"
+dependencies:
+  - name: frontend
+    condition: frontend.enabled
+  - name: backend
+    condition: backend.enabled
+icon: ./favicon.svg

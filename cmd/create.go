@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -13,8 +14,9 @@ import (
 )
 
 type promptContent struct {
+	text     string
+	optional bool
 	errorMsg string
-	label    string
 }
 
 func createExtensionCmd() *cobra.Command {
@@ -25,40 +27,46 @@ func createExtensionCmd() *cobra.Command {
 		Args:         cobra.ExactArgs(0),
 		RunE:         run,
 	}
-
 	return cmd
 }
 
 func run(cmd *cobra.Command, args []string) error {
 	extensionNamePrompt := promptContent{
+		text:     "Please input extension name",
 		errorMsg: "Extension name can't be empty",
-		label:    "Please input extension name: ",
 	}
-	name := promptGetRequiredInput(extensionNamePrompt)
+	name := promptGetInput(extensionNamePrompt)
 
 	categoryPromptContent := promptContent{
-		"Please provide a category.",
-		fmt.Sprintf("What category does %s belong to?", name),
+		text:     fmt.Sprintf("What category does %s belong to?", name),
+		errorMsg: "Please provide a category",
 	}
 	category := promptGetSelect(categoryPromptContent)
 
 	authorPrompt := promptContent{
+		text:     "Please input extension author",
 		errorMsg: "Extension author can't be empty",
-		label:    "Please input extension author",
 	}
 	author := promptGetInput(authorPrompt)
 
 	emailPrompt := promptContent{
-		errorMsg: "Email can't be empty",
-		label:    "Please input Email",
+		text:     "Please input Email",
+		optional: true,
 	}
 	email := promptGetInput(emailPrompt)
+
+	urlPrompt := promptContent{
+		text:     "Please input author's URL",
+		optional: true,
+	}
+	url := promptGetInput(urlPrompt)
 
 	extensionConfig := extension.Config{
 		Name:     name,
 		Category: category,
 		Author:   author,
 		Email:    email,
+		URL:      url,
 	}
 
 	pwd, _ := os.Getwd()
@@ -73,34 +81,28 @@ func run(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+var (
+	bold  = promptui.Styler(promptui.FGBold)
+	faint = promptui.Styler(promptui.FGFaint)
+)
+
 func promptGetInput(pc promptContent) string {
 	prompt := promptui.Prompt{
-		Label: pc.label,
+		Label: pc.text,
 	}
 
-	result, _ := prompt.Run()
-	return result
-}
-
-func promptGetRequiredInput(pc promptContent) string {
-	validate := func(input string) error {
-		if len(input) <= 0 {
-			return errors.New(pc.errorMsg)
+	if pc.optional {
+		prompt.Templates = &promptui.PromptTemplates{
+			Valid:   fmt.Sprintf("%s {{ . | bold }} %s ", bold(promptui.IconGood), bold("(optional):")),
+			Success: fmt.Sprintf("{{ . | faint }} %s ", faint("(optional):")),
 		}
-		return nil
-	}
-
-	templates := &promptui.PromptTemplates{
-		Prompt:  "{{ . }} ",
-		Valid:   "{{ . | green }} ",
-		Invalid: "{{ . | red }} ",
-		Success: "{{ . | bold }} ",
-	}
-
-	prompt := promptui.Prompt{
-		Label:     pc.label,
-		Templates: templates,
-		Validate:  validate,
+	} else {
+		prompt.Validate = func(input string) error {
+			if len(strings.TrimSpace(input)) <= 0 {
+				return errors.New(pc.errorMsg)
+			}
+			return nil
+		}
 	}
 
 	result, err := prompt.Run()
@@ -108,10 +110,7 @@ func promptGetRequiredInput(pc promptContent) string {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 	}
-
-	//fmt.Printf("Input: %s\n", result)
-
-	return result
+	return strings.TrimSpace(result)
 }
 
 func promptGetSelect(pc promptContent) string {
@@ -122,9 +121,8 @@ func promptGetSelect(pc promptContent) string {
 
 	for index < 0 {
 		prompt := promptui.Select{
-			Label: pc.label,
+			Label: pc.text,
 			Items: items,
-			//AddLabel: "Other",
 		}
 
 		index, result, err = prompt.Run()
@@ -138,8 +136,6 @@ func promptGetSelect(pc promptContent) string {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 	}
-
-	//fmt.Printf("Input: %s\n", result)
 
 	return result
 }
