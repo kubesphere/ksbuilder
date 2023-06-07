@@ -39,6 +39,7 @@ func Load(path string) (*Extension, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer os.RemoveAll(tempDir) // nolint
 
 	err = copy.Copy(path, tempDir)
 	if err != nil {
