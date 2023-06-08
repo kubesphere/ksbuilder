@@ -7,16 +7,16 @@ import (
 	"io"
 	"os"
 	"path"
-	"path/filepath"
 )
 
-func unzip(zipFile []byte, dest string) error {
+func unzip(zipFile []byte) (map[string][]byte, error) {
 	gr, err := gzip.NewReader(bytes.NewReader(zipFile))
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer gr.Close() // nolint
 
+	data := make(map[string][]byte)
 	tr := tar.NewReader(gr)
 	for {
 		h, err := tr.Next()
@@ -24,30 +24,20 @@ func unzip(zipFile []byte, dest string) error {
 			break
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		p := path.Join(dest, h.Name)
 		if h.FileInfo().IsDir() {
-			if err = os.MkdirAll(p, os.ModePerm); err != nil {
-				return err
-			}
 			continue
 		}
-		if err = os.MkdirAll(filepath.Dir(p), os.ModePerm); err != nil {
-			return err
-		}
-		fw, err := os.OpenFile(p, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, h.FileInfo().Mode())
-		if err != nil {
-			return err
-		}
-		defer fw.Close() // nolint
 
-		if _, err = io.Copy(fw, tr); err != nil {
-			return err
+		buffer := make([]byte, h.Size)
+		if _, err = tr.Read(buffer); err != nil && err != io.EOF {
+			return nil, err
 		}
+		data[h.Name] = buffer
 	}
-	return nil
+	return data, nil
 }
 
 func readFile(dir, name string) ([]byte, error) {
