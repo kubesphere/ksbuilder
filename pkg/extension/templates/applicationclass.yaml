@@ -1,0 +1,30 @@
+#applicationClassGroup:
+#name:
+#provisioner: kubesphere.io/helm-application
+#appVersion:
+#packageVersion:
+#description:
+#  zh: 示例ApplicationClass
+#  en: Sample ApplicationClass
+#maintainer:
+#  name:
+#  email:
+#icon: ./favicon.svg
+
+##---
+
+#applicationClassGroup:
+#name:
+#provisioner: kubesphere.io/yaml-application
+#appVersion:
+#packageVersion:
+#parameters:
+#  OpenSearchCluster: opensearch.opster.io/v1
+#  Logstash: opensearch.opster.io/v1
+#description:
+#  zh: 示例ApplicationClass
+#  en: Sample ApplicationClass
+#maintainer:
+#  name:
+#  email:
+#icon: ./favicon.svg

@@ -121,9 +121,22 @@ type Extension struct {
 	ChartData []byte
 }
 
+type ApplicationClass struct {
+	ApplicationClassGroup string            `json:"applicationClassGroup,omitempty"`
+	Name                  string            `json:"name,omitempty"`
+	Provisioner           string            `json:"provisioner,omitempty"`
+	Parameters            map[string]string `json:"parameters,omitempty"`
+	AppVersion            string            `json:"appVersion,omitempty"`
+	PackageVersion        string            `json:"packageVersion,omitempty"`
+	Icon                  string            `json:"icon,omitempty"`
+	Description           Locales           `json:"description,omitempty"`
+	Maintainer            *chart.Maintainer `json:"maintainer,omitempty"`
+}
+
 var (
 	extensionTmpl        = template.New("Extension").Funcs(sprig.FuncMap())
 	extensionVersionTmpl = template.New("ExtensionVersion").Funcs(sprig.FuncMap())
+	applicationClassTmpl = template.New("ApplicationClass").Funcs(sprig.FuncMap())
 )
 
 func init() {
@@ -165,6 +178,26 @@ spec:
   kubeVersion: {{.KubeVersion | quote}}
   sources: {{.Sources | toJson}}
   version: {{.Version | quote}}
+`)
+	if err != nil {
+		panic(err)
+	}
+
+	applicationClassTmpl, err = applicationClassTmpl.Parse(`
+apiVersion: applicationclass.kubesphere.io/v1alpha1
+kind: ApplicationClass
+metadata:
+  name: {{.Name}}-{{.PackageVersion}}
+  labels:
+    applicationclass.kubesphere.io/group: {{.ApplicationClassGroup}}
+provisioner: {{.Provisioner | quote}}
+parameters: {{.Parameters | toJson}}
+spec:
+  appVersion: {{.AppVersion | quote}}
+  packageVersion: {{.PackageVersion | quote}}
+  icon: {{.Icon | quote}}
+  description: {{.Description | toJson}}
+  maintainer: {{.Maintainer | toJson}}
 `)
 	if err != nil {
 		panic(err)
