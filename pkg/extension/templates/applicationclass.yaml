@@ -1,23 +1,22 @@
-#applicationClassGroup:
-#name:
+#applicationClassGroup: mysql
+#name: mysql-b
 #provisioner: kubesphere.io/helm-application
-#appVersion:
-#packageVersion:
+#appVersion: 8.0.0
+#packageVersion: 1.0.2
 #description:
 #  zh: 示例ApplicationClass
 #  en: Sample ApplicationClass
 #maintainer:
-#  name:
-#  email:
-#icon: ./favicon.svg
+#  name: cdd
+#  email: aa@bb.com
 
 ##---
 
-#applicationClassGroup:
-#name:
+#applicationClassGroup: opensearch
+#name: opensearch-operator-app
 #provisioner: kubesphere.io/yaml-application
-#appVersion:
-#packageVersion:
+#appVersion: 7.7.0
+#packageVersion: 1.0.1
 #parameters:
 #  OpenSearchCluster: opensearch.opster.io/v1
 #  Logstash: opensearch.opster.io/v1
@@ -25,6 +24,6 @@
 #  zh: 示例ApplicationClass
 #  en: Sample ApplicationClass
 #maintainer:
-#  name:
-#  email:
+#  name: cdd
+#  email: aa@bb.com
 #icon: ./favicon.svg
