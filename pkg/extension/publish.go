@@ -2,6 +2,7 @@ package extension
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/otiai10/copy"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -76,8 +77,9 @@ func LoadApplicationClass(name, p, tempDir string) error {
 		}
 
 		if appClass.Provisioner == "kubesphere.io/helm-application" {
+			var cmName = fmt.Sprintf("application-%s-chart", name)
 			appClass.Parameters = make(map[string]string)
-			appClass.Parameters["configmap"] = name
+			appClass.Parameters["configmap"] = cmName
 			appClass.Parameters["namespace"] = "kubesphere-system"
 
 			err = copy.Copy(tempDir+"/application-package.yaml", filePath+"/templates/application-package.yaml")

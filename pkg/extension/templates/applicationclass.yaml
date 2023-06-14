@@ -7,8 +7,9 @@
 #  zh: 示例ApplicationClass
 #  en: Sample ApplicationClass
 #maintainer:
-#  name: cdd
-#  email: aa@bb.com
+#  name: demo
+#  email: demo@demo.com
+#icon: ./favicon.svg
 
 ##---
 
@@ -24,6 +25,6 @@
 #  zh: 示例ApplicationClass
 #  en: Sample ApplicationClass
 #maintainer:
-#  name: cdd
-#  email: aa@bb.com
+#  name: demo
+#  email: demo@demo.com
 #icon: ./favicon.svg
