@@ -18,9 +18,19 @@ vendor:
   name: "[[ .Author ]]"
   email: "[[ .Email ]]"
   url: "[[ .URL ]]"
+icon: ./favicon.svg
 dependencies:
   - name: frontend
     condition: frontend.enabled
   - name: backend
     condition: backend.enabled
-icon: ./favicon.svg
+# external dependencies example
+#externalDependencies:
+#  - name: a
+#    type: extension
+#    version: ">= 2.6.0"
+#    required: true
+#  - name: b
+#    type: extension
+#    version: ">= 2.2.0"
+#    required: true
