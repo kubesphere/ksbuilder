@@ -17,37 +17,18 @@ import (
 
 type Extension struct {
 	ChartMetadata       *chart.Metadata
-	DisplayName         string
-	Description         string
-	README              []byte
-	Changelog           []byte
+	DisplayName         extension.Locales
+	Description         extension.Locales
+	README              extension.Locales
+	Changelog           extension.Locales
 	KSVersion           string
 	StaticFileDirectory string
 	Screenshots         []string
-	Provider            map[string]*chart.Maintainer
-	SupportedLanguages  []string
+	Provider            map[extension.LanguageCode]*chart.Maintainer
+	SupportedLanguages  []extension.LanguageCode
 }
 
-type options struct {
-	language string
-}
-
-// WithLanguage specifies the language to use when parsing the extension.
-// The default value is `en`.
-func WithLanguage(language string) func(opts *options) {
-	return func(opts *options) {
-		opts.language = language
-	}
-}
-
-func ParseExtension(name string, zipFile []byte, opts ...func(*options)) (*Extension, error) {
-	o := &options{
-		language: extension.LanguageCodeEn,
-	}
-	for _, f := range opts {
-		f(o)
-	}
-
+func ParseExtension(name string, zipFile []byte) (*Extension, error) {
 	data, err := unzip(zipFile)
 	if err != nil {
 		return nil, err
@@ -62,31 +43,38 @@ func ParseExtension(name string, zipFile []byte, opts ...func(*options)) (*Exten
 		return nil, err
 	}
 
-	readmeFileName := "README.md"
-	if o.language != extension.LanguageCodeEn {
-		readmeFileName = fmt.Sprintf("README_%s.md", o.language)
-	}
-	readmeData := data[path.Join(name, readmeFileName)]
-	changelogFileName := "CHANGELOG.md"
-	if o.language != extension.LanguageCodeEn {
-		changelogFileName = fmt.Sprintf("CHANGELOG_%s.md", o.language)
-	}
-	changelogData := data[path.Join(name, changelogFileName)]
+	displayNameLanguages := sets.KeySet(metadata.DisplayName)
+	descriptionLanguages := sets.KeySet(metadata.Description)
+	supportedLanguages := displayNameLanguages.Intersection(descriptionLanguages).UnsortedList()
 
-	displayNameLanguages := sets.NewString(getKeys(metadata.DisplayName)...)
-	descriptionLanguages := sets.NewString(getKeys(metadata.Description)...)
+	readmeData := extension.Locales{}
+	for _, lang := range supportedLanguages {
+		readmeFileName := "README.md"
+		if lang != extension.LanguageCodeEn {
+			readmeFileName = fmt.Sprintf("README_%s.md", lang)
+		}
+		readmeData[lang] = string(data[path.Join(name, readmeFileName)])
+	}
+	changelogData := extension.Locales{}
+	for _, lang := range supportedLanguages {
+		changelogFileName := "CHANGELOG.md"
+		if lang != extension.LanguageCodeEn {
+			changelogFileName = fmt.Sprintf("CHANGELOG_%s.md", lang)
+		}
+		changelogData[lang] = string(data[path.Join(name, changelogFileName)])
+	}
 
 	return &Extension{
 		ChartMetadata:       chartMetadata,
-		DisplayName:         string(metadata.DisplayName[extension.LanguageCode(o.language)]),
-		Description:         string(metadata.Description[extension.LanguageCode(o.language)]),
+		DisplayName:         metadata.DisplayName,
+		Description:         metadata.Description,
 		KSVersion:           metadata.KsVersion,
 		README:              readmeData,
 		Changelog:           changelogData,
 		StaticFileDirectory: metadata.StaticFileDirectory,
 		Screenshots:         metadata.Screenshots,
 		Provider:            metadata.Provider,
-		SupportedLanguages:  displayNameLanguages.Intersection(descriptionLanguages).UnsortedList(),
+		SupportedLanguages:  supportedLanguages,
 	}, nil
 }
 
@@ -113,12 +101,4 @@ func parseMetadata(name string, data map[string][]byte) (*extension.Metadata, er
 	base64Encoding += base64.StdEncoding.EncodeToString(iconData)
 	metadata.Icon = base64Encoding
 	return metadata, nil
-}
-
-func getKeys(data extension.Locales) []string {
-	ret := make([]string, 0, len(data))
-	for k := range data {
-		ret = append(ret, string(k))
-	}
-	return ret
 }
