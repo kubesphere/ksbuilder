@@ -41,19 +41,22 @@ func (l Locales) Default() string {
 
 type Metadata struct {
 	// The name of the chart. Required.
-	Name         string              `json:"name,omitempty"`
-	DisplayName  Locales             `json:"displayName,omitempty"`
-	Description  Locales             `json:"description,omitempty"`
-	ApiVersion   string              `json:"apiVersion,omitempty"`
-	Icon         string              `json:"icon,omitempty"`
-	Version      string              `json:"version,omitempty"`
-	Keywords     []string            `json:"keywords,omitempty"`
-	Sources      []string            `json:"sources,omitempty"`
-	Vendor       *chart.Maintainer   `json:"vendor,omitempty"`
-	KubeVersion  string              `json:"kubeVersion,omitempty"`
-	KsVersion    string              `json:"ksVersion,omitempty"`
-	Home         string              `json:"home,omitempty"`
-	Dependencies []*chart.Dependency `json:"dependencies,omitempty"`
+	Name                string                       `json:"name,omitempty"`
+	DisplayName         Locales                      `json:"displayName,omitempty"`
+	Description         Locales                      `json:"description,omitempty"`
+	ApiVersion          string                       `json:"apiVersion,omitempty"`
+	StaticFileDirectory string                       `json:"staticFileDirectory,omitempty"`
+	Icon                string                       `json:"icon,omitempty"`
+	Screenshots         []string                     `json:"screenshots,omitempty"`
+	Version             string                       `json:"version,omitempty"`
+	Keywords            []string                     `json:"keywords,omitempty"`
+	Sources             []string                     `json:"sources,omitempty"`
+	Maintainers         []*chart.Maintainer          `json:"maintainers,omitempty"`
+	Provider            map[string]*chart.Maintainer `json:"provider,omitempty"`
+	KubeVersion         string                       `json:"kubeVersion,omitempty"`
+	KsVersion           string                       `json:"ksVersion,omitempty"`
+	Home                string                       `json:"home,omitempty"`
+	Dependencies        []*chart.Dependency          `json:"dependencies,omitempty"`
 }
 
 func (md *Metadata) Validate(p string) error {
@@ -110,9 +113,8 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 		Dependencies: md.Dependencies,
 		Description:  md.Description.Default(),
 		Icon:         md.Icon,
-		Maintainers:  []*chart.Maintainer{md.Vendor},
+		Maintainers:  md.Maintainers,
 	}
-
 	return &c, nil
 }
 
@@ -137,7 +139,6 @@ spec:
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
   icon: {{.Icon | quote}}
-  vendor: {{.Vendor | toJson}}
 status:
   recommendedVersion: {{.Version}}
 `)
