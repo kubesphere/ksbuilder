@@ -45,7 +45,7 @@ func run(cmd *cobra.Command, args []string) error {
 
 	categoryPromptContent := selectPromptContent{
 		text:  fmt.Sprintf("What category does %s belong to?", name),
-		items: []string{"Performance", "Monitoring", "Logging", "Messaging", "Networking", "Security", "Database", "Storage", "Others"},
+		items: extension.Categories,
 	}
 	category := promptGetSelect(categoryPromptContent)
 

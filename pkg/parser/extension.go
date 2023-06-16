@@ -21,6 +21,7 @@ type Extension struct {
 	Description         extension.Locales
 	README              extension.Locales
 	Changelog           extension.Locales
+	Category            string
 	KSVersion           string
 	StaticFileDirectory string
 	Screenshots         []string
@@ -71,6 +72,7 @@ func ParseExtension(name string, zipFile []byte) (*Extension, error) {
 		KSVersion:           metadata.KsVersion,
 		README:              readmeData,
 		Changelog:           changelogData,
+		Category:            metadata.Category,
 		StaticFileDirectory: metadata.StaticFileDirectory,
 		Screenshots:         metadata.Screenshots,
 		Provider:            metadata.Provider,

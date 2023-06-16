@@ -40,6 +40,10 @@ func (l Locales) Default() string {
 	return ""
 }
 
+var Categories = []string{
+	"kubernetes", "storage", "devops", "monitoring", "logging", "security", "database",
+}
+
 type Metadata struct {
 	// The name of the chart. Required.
 	Name                string                             `json:"name,omitempty"`
@@ -50,6 +54,7 @@ type Metadata struct {
 	Icon                string                             `json:"icon,omitempty"`
 	Screenshots         []string                           `json:"screenshots,omitempty"`
 	Version             string                             `json:"version,omitempty"`
+	Category            string                             `json:"category,omitempty"`
 	Keywords            []string                           `json:"keywords,omitempty"`
 	Sources             []string                           `json:"sources,omitempty"`
 	Maintainers         []*chart.Maintainer                `json:"maintainers,omitempty"`
@@ -136,6 +141,8 @@ apiVersion: kubesphere.io/v1alpha1
 kind: Extension
 metadata:
   name: {{.Name}}
+  labels:
+    category.kubesphere.io: {{.Category}}
 spec:
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
