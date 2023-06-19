@@ -44,7 +44,7 @@ func createExtensionCmd() *cobra.Command {
 	return cmd
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func (o *createOptions) run(cmd *cobra.Command, args []string) error {
 	extensionNamePrompt := inputPromptContent{
 		text:     "Please input extension name",
 		errorMsg: "Extension name can't be empty",
