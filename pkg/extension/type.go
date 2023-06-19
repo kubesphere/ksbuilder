@@ -147,6 +147,7 @@ spec:
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
   icon: {{.Icon | quote}}
+  provider: {{.Provider | toJson}}
 status:
   recommendedVersion: {{.Version}}
 `)
