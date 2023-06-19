@@ -18,42 +18,51 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-const LanguageCodeEn = "en"
-const LanguageCodeZh = "zh"
+const (
+	LanguageCodeEn = "en"
+	LanguageCodeZh = "zh"
+)
 
 type LanguageCode string
-type LocaleString string
-type Locales map[LanguageCode]LocaleString
+type Locales map[LanguageCode]string
 
 func (l Locales) Default() string {
 	if en, ok := l[LanguageCodeEn]; ok {
-		return string(en)
+		return en
 	}
 	if zh, ok := l[LanguageCodeZh]; ok {
-		return string(zh)
+		return zh
 	}
 	// pick up the first value
 	for _, ls := range l {
-		return string(ls)
+		return ls
 	}
 	return ""
 }
 
+var Categories = []string{
+	"kubernetes", "storage", "devops", "monitoring", "logging", "security", "database",
+}
+
 type Metadata struct {
 	// The name of the chart. Required.
-	Name         string              `json:"name,omitempty"`
-	DisplayName  Locales             `json:"displayName,omitempty"`
-	Description  Locales             `json:"description,omitempty"`
-	ApiVersion   string              `json:"apiVersion,omitempty"`
-	Icon         string              `json:"icon,omitempty"`
-	Version      string              `json:"version,omitempty"`
-	Keywords     []string            `json:"keywords,omitempty"`
-	Sources      []string            `json:"sources,omitempty"`
-	Vendor       *chart.Maintainer   `json:"vendor,omitempty"`
-	KubeVersion  string              `json:"kubeVersion,omitempty"`
-	KsVersion    string              `json:"ksVersion,omitempty"`
-	Home         string              `json:"home,omitempty"`
-	Dependencies []*chart.Dependency `json:"dependencies,omitempty"`
+	Name                string                             `json:"name,omitempty"`
+	DisplayName         Locales                            `json:"displayName,omitempty"`
+	Description         Locales                            `json:"description,omitempty"`
+	ApiVersion          string                             `json:"apiVersion,omitempty"`
+	StaticFileDirectory string                             `json:"staticFileDirectory,omitempty"`
+	Icon                string                             `json:"icon,omitempty"`
+	Screenshots         []string                           `json:"screenshots,omitempty"`
+	Version             string                             `json:"version,omitempty"`
+	Category            string                             `json:"category,omitempty"`
+	Keywords            []string                           `json:"keywords,omitempty"`
+	Sources             []string                           `json:"sources,omitempty"`
+	Maintainers         []*chart.Maintainer                `json:"maintainers,omitempty"`
+	Provider            map[LanguageCode]*chart.Maintainer `json:"provider,omitempty"`
+	KubeVersion         string                             `json:"kubeVersion,omitempty"`
+	KsVersion           string                             `json:"ksVersion,omitempty"`
+	Home                string                             `json:"home,omitempty"`
+	Dependencies        []*chart.Dependency                `json:"dependencies,omitempty"`
 }
 
 func (md *Metadata) Validate(p string) error {
@@ -110,9 +119,8 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 		Dependencies: md.Dependencies,
 		Description:  md.Description.Default(),
 		Icon:         md.Icon,
-		Maintainers:  []*chart.Maintainer{md.Vendor},
+		Maintainers:  md.Maintainers,
 	}
-
 	return &c, nil
 }
 
@@ -146,11 +154,13 @@ apiVersion: kubesphere.io/v1alpha1
 kind: Extension
 metadata:
   name: {{.Name}}
+  labels:
+    category.kubesphere.io: {{.Category}}
 spec:
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
   icon: {{.Icon | quote}}
-  vendor: {{.Vendor | toJson}}
+  provider: {{.Provider | toJson}}
 status:
   recommendedVersion: {{.Version}}
 `)

@@ -7,6 +7,7 @@ displayName:
 description:
   zh: 这是一个示例扩展组件，这是它的描述
   en: This is a sample extension, and this is its description
+category: [[ .Category ]]
 keywords:
   - [[ .Category ]]
 home: https://kubesphere.io
@@ -14,11 +15,21 @@ sources:
   - https://github.com/kubesphere
 kubeVersion: ">=1.19.0"
 ksVersion: ">=3.0.0"
-vendor:
-  name: "[[ .Author ]]"
-  email: "[[ .Email ]]"
-  url: "[[ .URL ]]"
-icon: ./favicon.svg
+maintainers:
+  - name: "[[ .Author ]]"
+    email: "[[ .Email ]]"
+    url: "[[ .URL ]]"
+provider:
+  en:
+    name: "[[ .Author ]]"
+    email: "[[ .Email ]]"
+    url: "[[ .URL ]]"
+# All static files need to be placed in the same directory,
+# including the icon/screenshots below and the images referenced in the README file.
+staticFileDirectory: static
+icon: ./static/favicon.svg
+screenshots:
+  - ./static/screenshots/screenshot.png
 dependencies:
   - name: frontend
     condition: frontend.enabled

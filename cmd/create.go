@@ -13,10 +13,16 @@ import (
 	"github.com/kubesphere/ksbuilder/pkg/extension"
 )
 
-type promptContent struct {
+type inputPromptContent struct {
 	text     string
 	optional bool
 	errorMsg string
+}
+
+type selectPromptContent struct {
+	text              string
+	items             []string
+	startInSearchMode bool
 }
 
 type createOptions struct {
@@ -39,31 +45,31 @@ func createExtensionCmd() *cobra.Command {
 }
 
 func (o *createOptions) run(cmd *cobra.Command, args []string) error {
-	extensionNamePrompt := promptContent{
+	extensionNamePrompt := inputPromptContent{
 		text:     "Please input extension name",
 		errorMsg: "Extension name can't be empty",
 	}
 	name := promptGetInput(extensionNamePrompt)
 
-	categoryPromptContent := promptContent{
-		text:     fmt.Sprintf("What category does %s belong to?", name),
-		errorMsg: "Please provide a category",
+	categoryPromptContent := selectPromptContent{
+		text:  fmt.Sprintf("What category does %s belong to?", name),
+		items: extension.Categories,
 	}
 	category := promptGetSelect(categoryPromptContent)
 
-	authorPrompt := promptContent{
+	authorPrompt := inputPromptContent{
 		text:     "Please input extension author",
 		errorMsg: "Extension author can't be empty",
 	}
 	author := promptGetInput(authorPrompt)
 
-	emailPrompt := promptContent{
+	emailPrompt := inputPromptContent{
 		text:     "Please input Email",
 		optional: true,
 	}
 	email := promptGetInput(emailPrompt)
 
-	urlPrompt := promptContent{
+	urlPrompt := inputPromptContent{
 		text:     "Please input author's URL",
 		optional: true,
 	}
@@ -105,7 +111,7 @@ var (
 	faint = promptui.Styler(promptui.FGFaint)
 )
 
-func promptGetInput(pc promptContent) string {
+func promptGetInput(pc inputPromptContent) string {
 	prompt := promptui.Prompt{
 		Label: pc.text,
 	}
@@ -132,29 +138,20 @@ func promptGetInput(pc promptContent) string {
 	return strings.TrimSpace(result)
 }
 
-func promptGetSelect(pc promptContent) string {
-	items := []string{"Performance", "Monitoring", "Logging", "Messaging", "Networking", "Security", "Database", "Storage", "Others"}
-	index := -1
-	var result string
-	var err error
-
-	for index < 0 {
-		prompt := promptui.Select{
-			Label: pc.text,
-			Items: items,
-		}
-
-		index, result, err = prompt.Run()
-
-		if index == -1 {
-			items = append(items, result)
-		}
+func promptGetSelect(pc selectPromptContent) string {
+	prompt := promptui.Select{
+		Label: pc.text,
+		Items: pc.items,
+		Searcher: func(input string, index int) bool {
+			return strings.Contains(strings.ToLower(pc.items[index]), strings.ToLower(input))
+		},
+		StartInSearchMode: pc.startInSearchMode,
 	}
 
+	_, result, err := prompt.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 	}
-
 	return result
 }

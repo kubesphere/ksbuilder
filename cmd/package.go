@@ -7,9 +7,9 @@ import (
 
 	"github.com/otiai10/copy"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
+	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/pkg/extension"
 )
