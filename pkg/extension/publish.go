@@ -16,16 +16,17 @@ func LoadMetadata(path string) (*Metadata, error) {
 	if err != nil {
 		return nil, err
 	}
-	var metadata Metadata
-	err = yaml.Unmarshal(content, &metadata)
-	if err != nil {
+	metadata := new(Metadata)
+	if err = yaml.Unmarshal(content, metadata); err != nil {
 		return nil, err
 	}
-	err = metadata.Validate(path)
-	if err != nil {
+	if err = metadata.Validate(); err != nil {
 		return nil, err
 	}
-	return &metadata, nil
+	if err = metadata.Init(path); err != nil {
+		return nil, err
+	}
+	return metadata, nil
 }
 
 func Load(path string) (*Extension, error) {

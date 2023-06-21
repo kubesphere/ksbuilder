@@ -69,7 +69,7 @@ func ParseExtension(name string, zipFile []byte) (*Extension, error) {
 		ChartMetadata:       chartMetadata,
 		DisplayName:         metadata.DisplayName,
 		Description:         metadata.Description,
-		KSVersion:           metadata.KsVersion,
+		KSVersion:           metadata.KSVersion,
 		README:              readmeData,
 		Changelog:           changelogData,
 		Category:            metadata.Category,
@@ -84,6 +84,9 @@ func parseMetadata(name string, data map[string][]byte) (*extension.Metadata, er
 	metadata := new(extension.Metadata)
 	if err := yaml.Unmarshal(data[path.Join(name, extension.MetadataFilename)], metadata); err != nil {
 		return nil, err
+	}
+	if err := metadata.Validate(); err != nil {
+		return nil, fmt.Errorf("validate the extension metadata failed: %s", err.Error())
 	}
 	if strings.HasPrefix(metadata.Icon, "http://") ||
 		strings.HasPrefix(metadata.Icon, "https://") ||

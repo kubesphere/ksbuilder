@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"io"
-	"os"
-	"path"
 )
 
 func unzip(zipFile []byte) (map[string][]byte, error) {
@@ -36,17 +34,6 @@ func unzip(zipFile []byte) (map[string][]byte, error) {
 			return nil, err
 		}
 		data[h.Name] = buffer
-	}
-	return data, nil
-}
-
-func readFile(dir, name string) ([]byte, error) {
-	data, err := os.ReadFile(path.Join(dir, name))
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil, nil
-		}
-		return nil, err
 	}
 	return data, nil
 }
