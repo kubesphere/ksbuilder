@@ -12,6 +12,7 @@ import (
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
+	"github.com/go-playground/validator/v10"
 	"helm.sh/helm/v3/pkg/chart"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -45,28 +46,31 @@ var Categories = []string{
 }
 
 type Metadata struct {
+	APIVersion string `json:"apiVersion" validate:"required"`
 	// The name of the chart. Required.
-	Name                string                             `json:"name,omitempty"`
-	DisplayName         Locales                            `json:"displayName,omitempty"`
-	Description         Locales                            `json:"description,omitempty"`
-	ApiVersion          string                             `json:"apiVersion,omitempty"`
-	StaticFileDirectory string                             `json:"staticFileDirectory,omitempty"`
-	Icon                string                             `json:"icon,omitempty"`
-	Screenshots         []string                           `json:"screenshots,omitempty"`
-	Version             string                             `json:"version,omitempty"`
-	Category            string                             `json:"category,omitempty"`
+	Name                string                             `json:"name" validate:"required"`
+	Version             string                             `json:"version" validate:"required"`
+	DisplayName         Locales                            `json:"displayName" validate:"required"`
+	Description         Locales                            `json:"description" validate:"required"`
+	Category            string                             `json:"category" validate:"required"`
 	Keywords            []string                           `json:"keywords,omitempty"`
-	Sources             []string                           `json:"sources,omitempty"`
-	Maintainers         []*chart.Maintainer                `json:"maintainers,omitempty"`
-	Provider            map[LanguageCode]*chart.Maintainer `json:"provider,omitempty"`
-	KubeVersion         string                             `json:"kubeVersion,omitempty"`
-	KsVersion           string                             `json:"ksVersion,omitempty"`
 	Home                string                             `json:"home,omitempty"`
+	Sources             []string                           `json:"sources,omitempty"`
+	KubeVersion         string                             `json:"kubeVersion,omitempty"`
+	KSVersion           string                             `json:"ksVersion,omitempty"`
+	Maintainers         []*chart.Maintainer                `json:"maintainers,omitempty"`
+	Provider            map[LanguageCode]*chart.Maintainer `json:"provider" validate:"required"`
+	StaticFileDirectory string                             `json:"staticFileDirectory" validate:"required"`
+	Icon                string                             `json:"icon" validate:"required"`
+	Screenshots         []string                           `json:"screenshots,omitempty"`
 	Dependencies        []*chart.Dependency                `json:"dependencies,omitempty"`
 }
 
-func (md *Metadata) Validate(p string) error {
-	// TODO: validate metadata
+func (md *Metadata) Validate() error {
+	return validator.New().Struct(md)
+}
+
+func (md *Metadata) Init(p string) error {
 	err := md.LoadIcon(p)
 	if err != nil {
 		return err
@@ -110,7 +114,7 @@ func (md *Metadata) LoadIcon(p string) error {
 func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 	var c = chart.Metadata{
 		Name:         md.Name,
-		APIVersion:   md.ApiVersion,
+		APIVersion:   md.APIVersion,
 		Version:      md.Version,
 		Keywords:     md.Keywords,
 		Sources:      md.Sources,
@@ -171,7 +175,7 @@ spec:
   home: {{.Home | quote}}
   icon: {{.Icon | quote}}
   keywords: {{.Keywords | toJson}}
-  ksVersion: {{.KsVersion | quote}}
+  ksVersion: {{.KSVersion | quote}}
   kubeVersion: {{.KubeVersion | quote}}
   sources: {{.Sources | toJson}}
   version: {{.Version | quote}}
