@@ -3,12 +3,13 @@ package extension
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"path"
+
 	"github.com/otiai10/copy"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
-	"os"
-	"path"
 	"sigs.k8s.io/yaml"
 )
 
@@ -40,6 +41,9 @@ func LoadApplicationClass(name, p, tempDir string) error {
 
 	content, err := os.ReadFile(p + "/applicationclass.yaml")
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
 		return err
 	}
 	var appClass ApplicationClass
