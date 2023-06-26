@@ -4,14 +4,15 @@ import (
 	"embed"
 	"fmt"
 	"io/fs"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"path"
 	"path/filepath"
-	"sigs.k8s.io/yaml"
 	"strings"
 	"text/template"
+
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/yaml"
 )
 
 type Config struct {
@@ -59,7 +60,7 @@ func Create(p string, config Config) error {
 func CreateAppChart(p string, name string, chart []byte) error {
 	var cmName = fmt.Sprintf("application-%s-chart", name)
 
-	var cm = v1.ConfigMap{
+	var cm = corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "ConfigMap",

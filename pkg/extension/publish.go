@@ -47,60 +47,54 @@ func LoadApplicationClass(name, p, tempDir string) error {
 		return err
 	}
 	var appClass ApplicationClass
-	err = yaml.Unmarshal(content, &appClass)
-	if err != nil {
+	if err = yaml.Unmarshal(content, &appClass); err != nil {
 		return err
 	}
 
 	// Validate
-	if len(appClass.Name) != 0 {
-		filePath := path.Join(tempDir, "charts/applicationclass")
-		err = os.MkdirAll(filePath, 0644)
-		if err != nil {
+	if len(appClass.Name) == 0 {
+		return nil
+	}
+
+	filePath := path.Join(tempDir, "charts/applicationclass")
+	if err = os.MkdirAll(filePath, 0644); err != nil {
+		return err
+	}
+
+	c := &chart.Metadata{
+		APIVersion: "v1",
+		Name:       appClass.Name,
+		Version:    appClass.PackageVersion,
+		AppVersion: appClass.AppVersion,
+	}
+	appClassChart, err := yaml.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	if err = os.WriteFile(filePath+"/Chart.yaml", appClassChart, 0644); err != nil {
+		return err
+	}
+	if err = os.MkdirAll(filePath+"/templates", 0644); err != nil {
+		return err
+	}
+
+	if appClass.Provisioner == "kubesphere.io/helm-application" {
+		var cmName = fmt.Sprintf("application-%s-chart", name)
+		appClass.Parameters = make(map[string]string)
+		appClass.Parameters["configmap"] = cmName
+		appClass.Parameters["namespace"] = "kubesphere-system"
+
+		if err = copy.Copy(tempDir+"/application-package.yaml", filePath+"/templates/application-package.yaml"); err != nil {
 			return err
 		}
+	}
 
-		c := &chart.Metadata{
-			APIVersion: "v1",
-			Name:       appClass.Name,
-			Version:    appClass.PackageVersion,
-			AppVersion: appClass.AppVersion,
-		}
-		appClassChart, err := yaml.Marshal(c)
-		if err != nil {
-			return err
-		}
-
-		err = os.WriteFile(filePath+"/Chart.yaml", appClassChart, 0644)
-		if err != nil {
-			return err
-		}
-
-		err = os.MkdirAll(filePath+"/templates", 0644)
-		if err != nil {
-			return err
-		}
-
-		if appClass.Provisioner == "kubesphere.io/helm-application" {
-			var cmName = fmt.Sprintf("application-%s-chart", name)
-			appClass.Parameters = make(map[string]string)
-			appClass.Parameters["configmap"] = cmName
-			appClass.Parameters["namespace"] = "kubesphere-system"
-
-			err = copy.Copy(tempDir+"/application-package.yaml", filePath+"/templates/application-package.yaml")
-			if err != nil {
-				return err
-			}
-		}
-
-		err = applicationClassTmpl.Execute(&b, appClass)
-		if err != nil {
-			return err
-		}
-		err = os.WriteFile(filePath+"/templates/applicationclass.yaml", b.Bytes(), 0644)
-		if err != nil {
-			return err
-		}
+	if err = applicationClassTmpl.Execute(&b, appClass); err != nil {
+		return err
+	}
+	if err = os.WriteFile(filePath+"/templates/applicationclass.yaml", b.Bytes(), 0644); err != nil {
+		return err
 	}
 	return nil
 }
@@ -119,8 +113,7 @@ func Load(path string) (*Extension, error) {
 	}
 	defer os.RemoveAll(tempDir) // nolint
 
-	err = copy.Copy(path, tempDir)
-	if err != nil {
+	if err = copy.Copy(path, tempDir); err != nil {
 		return nil, err
 	}
 
@@ -134,13 +127,11 @@ func Load(path string) (*Extension, error) {
 		return nil, err
 	}
 
-	err = os.WriteFile(tempDir+"/Chart.yaml", chartMetadata, 0644)
-	if err != nil {
+	if err = os.WriteFile(tempDir+"/Chart.yaml", chartMetadata, 0644); err != nil {
 		return nil, err
 	}
 
-	err = LoadApplicationClass(metadata.Name, path, tempDir)
-	if err != nil {
+	if err = LoadApplicationClass(metadata.Name, path, tempDir); err != nil {
 		return nil, err
 	}
 
