@@ -90,7 +90,7 @@ func LoadApplicationClass(name, p, tempDir string) error {
 
 		err = applicationClassTmpl.Execute(&b, appClass)
 		if err != nil {
-			panic(err)
+			return err
 		}
 		err = os.WriteFile(filePath+"/templates/applicationclass.yaml", b.Bytes(), 0644)
 		if err != nil {
