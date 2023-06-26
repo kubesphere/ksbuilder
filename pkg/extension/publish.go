@@ -47,7 +47,7 @@ func LoadApplicationClass(name, p, tempDir string) error {
 		return err
 	}
 
-	//Validate
+	// Validate
 	if len(appClass.Name) != 0 {
 		filePath := path.Join(tempDir, "charts/applicationclass")
 		err = os.MkdirAll(filePath, 0644)
