@@ -74,7 +74,7 @@ func CreateAppChart(p string, name string, chart []byte) error {
 	}
 	cmByte, err := yaml.Marshal(cm)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	filePath := path.Join(p, "application-package.yaml")
