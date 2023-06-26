@@ -25,18 +25,26 @@ type selectPromptContent struct {
 	startInSearchMode bool
 }
 
+type createOptions struct {
+	from string
+}
+
 func createExtensionCmd() *cobra.Command {
+	o := &createOptions{}
+
 	cmd := &cobra.Command{
 		Use:          "create",
 		Short:        "Create a new KubeSphere extension",
 		SilenceUsage: true,
 		Args:         cobra.ExactArgs(0),
-		RunE:         run,
+		RunE:         o.run,
 	}
+	cmd.Flags().StringVar(&o.from, "from", "", "application helm chart file path of application class")
+
 	return cmd
 }
 
-func run(cmd *cobra.Command, args []string) error {
+func (o *createOptions) run(cmd *cobra.Command, args []string) error {
 	extensionNamePrompt := inputPromptContent{
 		text:     "Please input extension name",
 		errorMsg: "Extension name can't be empty",
@@ -79,6 +87,17 @@ func run(cmd *cobra.Command, args []string) error {
 	p := path.Join(pwd, name)
 	if err := extension.Create(p, extensionConfig); err != nil {
 		return err
+	}
+
+	if o.from != "" {
+		chartPath := path.Join(pwd, o.from)
+		appChart, err := os.ReadFile(chartPath)
+		if err != nil {
+			return err
+		}
+		if err = extension.CreateAppChart(p, name, appChart); err != nil {
+			return err
+		}
 	}
 
 	fmt.Printf("Directory: %s\n\n", p)
