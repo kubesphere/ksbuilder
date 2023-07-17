@@ -30,7 +30,7 @@ func unzip(zipFile []byte) (map[string][]byte, error) {
 		}
 
 		buffer := make([]byte, h.Size)
-		if _, err = tr.Read(buffer); err != nil && err != io.EOF {
+		if _, err = io.ReadFull(tr, buffer); err != nil && err != io.EOF {
 			return nil, err
 		}
 		data[h.Name] = buffer
