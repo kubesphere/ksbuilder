@@ -64,6 +64,7 @@ type Metadata struct {
 	Icon                string                             `json:"icon" validate:"required"`
 	Screenshots         []string                           `json:"screenshots,omitempty"`
 	Dependencies        []*chart.Dependency                `json:"dependencies,omitempty"`
+	InstallationMode    string                             `json:"-"`
 }
 
 func (md *Metadata) Validate() error {
@@ -179,7 +180,10 @@ metadata:
   labels:
     kubesphere.io/extension-ref: {{.Name}}
 spec:
-  chartDataRef: 
+{{- with .InstallationMode }}
+  installationMode: {{.}}
+{{- end }}
+  chartDataRef:
     namespace: kubesphere-system
     name: extension-{{.Name}}-{{.Version}}-chart
     key: chart.tgz
