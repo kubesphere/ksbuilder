@@ -62,7 +62,7 @@ func LoadApplicationClass(name, p, tempDir string) error {
 	}
 
 	c := &chart.Metadata{
-		APIVersion: "v1",
+		APIVersion: chart.APIVersionV2,
 		Name:       appClass.Name,
 		Version:    appClass.PackageVersion,
 		AppVersion: appClass.AppVersion,
