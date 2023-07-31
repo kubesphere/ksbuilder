@@ -114,8 +114,8 @@ func (md *Metadata) LoadIcon(p string) error {
 
 func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 	var c = chart.Metadata{
+		APIVersion:   chart.APIVersionV2,
 		Name:         md.Name,
-		APIVersion:   md.APIVersion,
 		Version:      md.Version,
 		Keywords:     md.Keywords,
 		Sources:      md.Sources,

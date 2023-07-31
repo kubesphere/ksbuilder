@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: kubesphere.io/v1alpha1
 name: [[ .Name ]]
 version: 0.1.0
 displayName:
