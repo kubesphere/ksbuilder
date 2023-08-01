@@ -64,7 +64,7 @@ type Metadata struct {
 	Icon                string                             `json:"icon" validate:"required"`
 	Screenshots         []string                           `json:"screenshots,omitempty"`
 	Dependencies        []*chart.Dependency                `json:"dependencies,omitempty"`
-	InstallationMode    string                             `json:"-"`
+	InstallationMode    string                             `json:"installationMode,omitempty"`
 }
 
 func (md *Metadata) Validate() error {
