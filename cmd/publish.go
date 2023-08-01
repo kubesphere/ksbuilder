@@ -12,8 +12,7 @@ import (
 )
 
 type publishOptions struct {
-	kubeconfig       string
-	multiClusterMode bool
+	kubeconfig string
 }
 
 func defaultPublishOptions() *publishOptions {
@@ -31,7 +30,6 @@ func publishExtensionCmd() *cobra.Command {
 		RunE:         o.publish,
 	}
 	cmd.Flags().StringVar(&o.kubeconfig, "kubeconfig", "", "kubeconfig file path of the target cluster")
-	cmd.Flags().BoolVar(&o.multiClusterMode, "multi-cluster-mode", false, "enable multi-cluster installation mode for the extension")
 	return cmd
 }
 
@@ -51,9 +49,6 @@ func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
 	}
 	defer os.RemoveAll(dir) // nolint
 
-	if o.multiClusterMode {
-		ext.Metadata.InstallationMode = "Multicluster"
-	}
 	filePath := path.Join(dir, "extension.yaml")
 	if err = os.WriteFile(filePath, ext.ToKubernetesResources(), 0644); err != nil {
 		return err

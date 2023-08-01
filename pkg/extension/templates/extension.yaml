@@ -35,6 +35,8 @@ dependencies:
     condition: frontend.enabled
   - name: backend
     condition: backend.enabled
+# installationMode describes how to install subcharts, it can be HostOnly or Multicluster.
+#installationMode: Multicluster
 # external dependencies example
 #externalDependencies:
 #  - name: a
