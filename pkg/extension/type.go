@@ -49,23 +49,22 @@ var Categories = []string{
 type Metadata struct {
 	APIVersion string `json:"apiVersion" validate:"required"`
 	// The name of the chart. Required.
-	Name                string                             `json:"name" validate:"required"`
-	Version             string                             `json:"version" validate:"required"`
-	DisplayName         Locales                            `json:"displayName" validate:"required"`
-	Description         Locales                            `json:"description" validate:"required"`
-	Category            string                             `json:"category" validate:"required"`
-	Keywords            []string                           `json:"keywords,omitempty"`
-	Home                string                             `json:"home,omitempty"`
-	Sources             []string                           `json:"sources,omitempty"`
-	KubeVersion         string                             `json:"kubeVersion,omitempty"`
-	KSVersion           string                             `json:"ksVersion,omitempty"`
-	Maintainers         []*chart.Maintainer                `json:"maintainers,omitempty"`
-	Provider            map[LanguageCode]*chart.Maintainer `json:"provider" validate:"required"`
-	StaticFileDirectory string                             `json:"staticFileDirectory" validate:"required"`
-	Icon                string                             `json:"icon" validate:"required"`
-	Screenshots         []string                           `json:"screenshots,omitempty"`
-	Dependencies        []*chart.Dependency                `json:"dependencies,omitempty"`
-	InstallationMode    string                             `json:"installationMode,omitempty"`
+	Name             string                             `json:"name" validate:"required"`
+	Version          string                             `json:"version" validate:"required"`
+	DisplayName      Locales                            `json:"displayName" validate:"required"`
+	Description      Locales                            `json:"description" validate:"required"`
+	Category         string                             `json:"category" validate:"required"`
+	Keywords         []string                           `json:"keywords,omitempty"`
+	Home             string                             `json:"home,omitempty"`
+	Sources          []string                           `json:"sources,omitempty"`
+	KubeVersion      string                             `json:"kubeVersion,omitempty"`
+	KSVersion        string                             `json:"ksVersion,omitempty"`
+	Maintainers      []*chart.Maintainer                `json:"maintainers,omitempty"`
+	Provider         map[LanguageCode]*chart.Maintainer `json:"provider" validate:"required"`
+	Icon             string                             `json:"icon" validate:"required"`
+	Screenshots      []string                           `json:"screenshots,omitempty"`
+	Dependencies     []*chart.Dependency                `json:"dependencies,omitempty"`
+	InstallationMode string                             `json:"installationMode,omitempty"`
 }
 
 func (md *Metadata) Validate() error {

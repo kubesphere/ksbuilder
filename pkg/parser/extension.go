@@ -16,17 +16,16 @@ import (
 )
 
 type Extension struct {
-	ChartMetadata       *chart.Metadata
-	DisplayName         extension.Locales
-	Description         extension.Locales
-	README              extension.Locales
-	Changelog           extension.Locales
-	Category            string
-	KSVersion           string
-	StaticFileDirectory string
-	Screenshots         []string
-	Provider            map[extension.LanguageCode]*chart.Maintainer
-	SupportedLanguages  []extension.LanguageCode
+	ChartMetadata      *chart.Metadata
+	DisplayName        extension.Locales
+	Description        extension.Locales
+	README             extension.Locales
+	Changelog          extension.Locales
+	Category           string
+	KSVersion          string
+	Screenshots        []string
+	Provider           map[extension.LanguageCode]*chart.Maintainer
+	SupportedLanguages []extension.LanguageCode
 }
 
 func ParseExtension(name string, zipFile []byte) (*Extension, error) {
@@ -66,17 +65,16 @@ func ParseExtension(name string, zipFile []byte) (*Extension, error) {
 	}
 
 	return &Extension{
-		ChartMetadata:       chartMetadata,
-		DisplayName:         metadata.DisplayName,
-		Description:         metadata.Description,
-		KSVersion:           metadata.KSVersion,
-		README:              readmeData,
-		Changelog:           changelogData,
-		Category:            metadata.Category,
-		StaticFileDirectory: metadata.StaticFileDirectory,
-		Screenshots:         metadata.Screenshots,
-		Provider:            metadata.Provider,
-		SupportedLanguages:  supportedLanguages,
+		ChartMetadata:      chartMetadata,
+		DisplayName:        metadata.DisplayName,
+		Description:        metadata.Description,
+		KSVersion:          metadata.KSVersion,
+		README:             readmeData,
+		Changelog:          changelogData,
+		Category:           metadata.Category,
+		Screenshots:        metadata.Screenshots,
+		Provider:           metadata.Provider,
+		SupportedLanguages: supportedLanguages,
 	}, nil
 }
 
