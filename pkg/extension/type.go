@@ -42,7 +42,8 @@ func (l Locales) Default() string {
 }
 
 var Categories = []string{
-	"kubernetes", "storage", "devops", "monitoring", "logging", "security", "database",
+	"ai-machine-learning", "database", "integration-delivery", "monitoring-logging", "networking", "security",
+	"storage", "streaming-messaging",
 }
 
 type Metadata struct {
