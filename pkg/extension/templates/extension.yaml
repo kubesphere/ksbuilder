@@ -14,7 +14,7 @@ home: https://kubesphere.io
 sources:
   - https://github.com/kubesphere
 kubeVersion: ">=1.19.0"
-ksVersion: ">=3.0.0"
+ksVersion: ">=4.0.0-alpha"
 maintainers:
   - name: "[[ .Author ]]"
     email: "[[ .Email ]]"
@@ -24,19 +24,20 @@ provider:
     name: "[[ .Author ]]"
     email: "[[ .Email ]]"
     url: "[[ .URL ]]"
-# All static files need to be placed in the same directory,
-# including the icon/screenshots below and the images referenced in the README file.
-staticFileDirectory: static
 icon: ./static/favicon.svg
 screenshots:
   - ./static/screenshots/screenshot.png
 dependencies:
   - name: frontend
-    condition: frontend.enabled
+    tags:
+    - extension
   - name: backend
-    condition: backend.enabled
+    tags:
+    - agent
 # installationMode describes how to install subcharts, it can be HostOnly or Multicluster.
-#installationMode: Multicluster
+# In Multicluster mode, the subchart with tag `extension` will only be deployed to the host cluster,
+# and the subchart with tag `agent` will be deployed to all selected clusters.
+installationMode: HostOnly
 # external dependencies example
 #externalDependencies:
 #  - name: a
