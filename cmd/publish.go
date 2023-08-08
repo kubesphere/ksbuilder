@@ -54,7 +54,7 @@ func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	kubectlArgs := []string{"apply", "--server-side=true", "-f", filePath}
+	kubectlArgs := []string{"apply", "--server-side=true", "--force-conflicts", "-f", filePath}
 	if o.kubeconfig != "" {
 		kubectlArgs = append(kubectlArgs, "--kubeconfig", o.kubeconfig)
 	}
