@@ -192,6 +192,7 @@ spec:
   displayName: {{.DisplayName | toJson}}
   home: {{.Home | quote}}
   icon: {{.Icon | quote}}
+  provider: {{.Provider | toJson}}
   keywords: {{.Keywords | toJson}}
   ksVersion: {{.KSVersion | quote}}
   kubeVersion: {{.KubeVersion | quote}}
