@@ -160,7 +160,7 @@ kind: Extension
 metadata:
   name: {{.Name}}
   labels:
-    category.kubesphere.io: {{.Category}}
+    kubesphere.io/category: {{.Category | quote}}
 spec:
   description: {{.Description | toJson}}
   displayName: {{.DisplayName | toJson}}
@@ -179,6 +179,7 @@ metadata:
   name: {{.Name}}-{{.Version}}
   labels:
     kubesphere.io/extension-ref: {{.Name}}
+    kubesphere.io/category: {{.Category | quote}}
 spec:
 {{- with .InstallationMode }}
   installationMode: {{.}}
@@ -196,6 +197,8 @@ spec:
   kubeVersion: {{.KubeVersion | quote}}
   sources: {{.Sources | toJson}}
   version: {{.Version | quote}}
+  category: {{.Category | quote}}
+  screenshots: {{.Screenshots | toJson}}
 `)
 	if err != nil {
 		panic(err)
