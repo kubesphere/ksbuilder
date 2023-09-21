@@ -33,11 +33,10 @@ func createExtensionCmd() *cobra.Command {
 	o := &createOptions{}
 
 	cmd := &cobra.Command{
-		Use:          "create",
-		Short:        "Create a new KubeSphere extension",
-		SilenceUsage: true,
-		Args:         cobra.ExactArgs(0),
-		RunE:         o.run,
+		Use:   "create",
+		Short: "Create a new KubeSphere extension",
+		Args:  cobra.ExactArgs(0),
+		RunE:  o.run,
 	}
 	cmd.Flags().StringVar(&o.from, "from", "", "application helm chart file path of application class")
 

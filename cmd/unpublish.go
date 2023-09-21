@@ -28,11 +28,10 @@ func unpublishExtensionCmd() *cobra.Command {
 	o := defaultUnpublishOptions()
 
 	cmd := &cobra.Command{
-		Use:          "unpublish",
-		Short:        "Unpublish an extension from the market",
-		SilenceUsage: true,
-		Args:         cobra.ExactArgs(1),
-		RunE:         o.unpublish,
+		Use:   "unpublish",
+		Short: "Unpublish an extension from the market",
+		Args:  cobra.ExactArgs(1),
+		RunE:  o.unpublish,
 	}
 	cmd.Flags().StringVar(&o.kubeconfig, "kubeconfig", "", "kubeconfig file path of the target cluster")
 	return cmd
