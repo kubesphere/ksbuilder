@@ -23,11 +23,10 @@ func publishExtensionCmd() *cobra.Command {
 	o := defaultPublishOptions()
 
 	cmd := &cobra.Command{
-		Use:          "publish",
-		Short:        "Publish an extension into the market",
-		SilenceUsage: true,
-		Args:         cobra.ExactArgs(1),
-		RunE:         o.publish,
+		Use:   "publish",
+		Short: "Publish an extension into the market",
+		Args:  cobra.ExactArgs(1),
+		RunE:  o.publish,
 	}
 	cmd.Flags().StringVar(&o.kubeconfig, "kubeconfig", "", "kubeconfig file path of the target cluster")
 	return cmd

@@ -25,11 +25,10 @@ func packageExtensionCmd() *cobra.Command {
 	o := defaultPackageOptions()
 
 	cmd := &cobra.Command{
-		Use:          "package",
-		Short:        "package an extension",
-		SilenceUsage: true,
-		Args:         cobra.ExactArgs(1),
-		RunE:         o.packageCmd,
+		Use:   "package",
+		Short: "package an extension",
+		Args:  cobra.ExactArgs(1),
+		RunE:  o.packageCmd,
 	}
 	return cmd
 }
