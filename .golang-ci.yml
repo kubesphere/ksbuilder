@@ -1,6 +1,6 @@
 run:
-  timeout: 5m
-  go: 1.19
+  timeout: 10m
+  go: 1.21
 
 linters:
   enable:

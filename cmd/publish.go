@@ -9,9 +9,7 @@ import (
 	"github.com/iawia002/lia/kubernetes/client"
 	"github.com/iawia002/lia/kubernetes/client/generic"
 	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"kubesphere.io/client-go/kubesphere/scheme"
-	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/kubesphere/ksbuilder/pkg/extension"
 )
@@ -59,26 +57,9 @@ func (o *publishOptions) publish(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	return createOrApplyObjs(context.Background(), genericClient, ext.ToKubernetesResources()...)
-}
-
-func createOrApplyObjs(ctx context.Context, c runtimeclient.Client, objs ...runtimeclient.Object) error {
-	for _, obj := range objs {
-		key := runtimeclient.ObjectKeyFromObject(obj)
-		newObj := obj.DeepCopyObject().(runtimeclient.Object)
-		if err := c.Get(ctx, key, newObj); err != nil {
-			if !errors.IsNotFound(err) {
-				return err
-			}
-			fmt.Printf("creating %s %s\n", obj.GetObjectKind().GroupVersionKind().Kind, obj.GetName())
-			if err = c.Create(ctx, obj); err != nil {
-				return err
-			}
-			continue
-		}
-
-		fmt.Printf("updating %s %s\n", obj.GetObjectKind().GroupVersionKind().Kind, obj.GetName())
-		if err := c.Patch(ctx, obj, runtimeclient.Apply, runtimeclient.ForceOwnership, runtimeclient.FieldOwner("ksbuilder")); err != nil {
+	for _, obj := range ext.ToKubernetesResources() {
+		fmt.Printf("creating %s %s\n", obj.GetObjectKind().GroupVersionKind().Kind, obj.GetName())
+		if err = client.Apply(context.Background(), genericClient, obj, client.WithFieldManager("ksbuilder")); err != nil {
 			return err
 		}
 	}
