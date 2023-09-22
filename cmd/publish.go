@@ -48,8 +48,12 @@ func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
 	}
 	defer os.RemoveAll(dir) // nolint
 
+	resources, err := ext.ToKubernetesResources()
+	if err != nil {
+		return err
+	}
 	filePath := path.Join(dir, "extension.yaml")
-	if err = os.WriteFile(filePath, ext.ToKubernetesResources(), 0644); err != nil {
+	if err = os.WriteFile(filePath, resources, 0644); err != nil {
 		return err
 	}
 

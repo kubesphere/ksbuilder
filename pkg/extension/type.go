@@ -147,14 +147,7 @@ type ApplicationClass struct {
 }
 
 var (
-	extensionTmpl        = template.New("Extension").Funcs(sprig.FuncMap())
-	extensionVersionTmpl = template.New("ExtensionVersion").Funcs(sprig.FuncMap())
-	applicationClassTmpl = template.New("ApplicationClass").Funcs(sprig.FuncMap())
-)
-
-func init() {
-	var err error
-	extensionTmpl, err = extensionTmpl.Parse(`
+	extensionTmpl = template.Must(template.New("Extension").Funcs(sprig.FuncMap()).Parse(`
 apiVersion: kubesphere.io/v1alpha1
 kind: Extension
 metadata:
@@ -168,11 +161,9 @@ spec:
   provider: {{.Provider | toJson}}
 status:
   recommendedVersion: {{.Version}}
-`)
-	if err != nil {
-		panic(err)
-	}
-	extensionVersionTmpl, err = extensionVersionTmpl.Parse(`
+`))
+
+	extensionVersionTmpl = template.Must(template.New("ExtensionVersion").Funcs(sprig.FuncMap()).Parse(`
 apiVersion: kubesphere.io/v1alpha1
 kind: ExtensionVersion
 metadata:
@@ -200,12 +191,9 @@ spec:
   version: {{.Version | quote}}
   category: {{.Category | quote}}
   screenshots: {{.Screenshots | toJson}}
-`)
-	if err != nil {
-		panic(err)
-	}
+`))
 
-	applicationClassTmpl, err = applicationClassTmpl.Parse(`
+	applicationClassTmpl = template.Must(template.New("ApplicationClass").Funcs(sprig.FuncMap()).Parse(`
 apiVersion: applicationclass.kubesphere.io/v1alpha1
 kind: ApplicationClass
 metadata:
@@ -220,13 +208,10 @@ spec:
   icon: {{.Icon | quote}}
   description: {{.Description | toJson}}
   maintainer: {{.Maintainer | toJson}}
-`)
-	if err != nil {
-		panic(err)
-	}
-}
+`))
+)
 
-func (ext *Extension) ToKubernetesResources() []byte {
+func (ext *Extension) ToKubernetesResources() ([]byte, error) {
 	// TODO: use kubesphere.io/api
 	var b bytes.Buffer
 	defer func() {
@@ -250,20 +235,20 @@ func (ext *Extension) ToKubernetesResources() []byte {
 	}
 	cmByte, err := yaml.Marshal(cm)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	b.Write(cmByte)
 	b.WriteString("\n---\n")
 	err = extensionTmpl.Execute(&b, ext.Metadata)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	b.WriteString("\n---\n")
 	err = extensionVersionTmpl.Execute(&b, ext.Metadata)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return b.Bytes()
+	return b.Bytes(), nil
 }
