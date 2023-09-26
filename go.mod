@@ -9,7 +9,6 @@ require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/otiai10/copy v1.7.0
 	github.com/spf13/cobra v1.6.0
-	github.com/stretchr/testify v1.8.2
 	helm.sh/helm/v3 v3.10.1
 	k8s.io/api v0.26.6
 	k8s.io/apimachinery v0.26.6
@@ -55,7 +54,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect

@@ -67,10 +67,10 @@ func CreateAppChart(p string, name string, chart []byte) error {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cmName,
-			Namespace: "kubesphere-system",
+			Namespace: kubeSphereSystem,
 		},
 		BinaryData: map[string][]byte{
-			"chart.tgz": chart,
+			configMapDataKey: chart,
 		},
 	}
 	cmByte, err := yaml.Marshal(cm)

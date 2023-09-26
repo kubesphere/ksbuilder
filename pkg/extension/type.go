@@ -1,7 +1,6 @@
 package extension
 
 import (
-	"bytes"
 	"encoding/base64"
 	"fmt"
 	"mime"
@@ -9,37 +8,14 @@ import (
 	"os"
 	"path"
 	"strings"
-	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
 	"github.com/go-playground/validator/v10"
 	"helm.sh/helm/v3/pkg/chart"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
+	corev1alpha1 "kubesphere.io/api/core/v1alpha1"
+	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
-
-const (
-	LanguageCodeEn = "en"
-	LanguageCodeZh = "zh"
-)
-
-type LanguageCode string
-type Locales map[LanguageCode]string
-
-func (l Locales) Default() string {
-	if en, ok := l[LanguageCodeEn]; ok {
-		return en
-	}
-	if zh, ok := l[LanguageCodeZh]; ok {
-		return zh
-	}
-	// pick up the first value
-	for _, ls := range l {
-		return ls
-	}
-	return ""
-}
 
 var Categories = []string{
 	"ai-machine-learning", "database", "integration-delivery", "monitoring-logging", "networking", "security",
@@ -49,22 +25,22 @@ var Categories = []string{
 type Metadata struct {
 	APIVersion string `json:"apiVersion" validate:"required"`
 	// The name of the chart. Required.
-	Name             string                             `json:"name" validate:"required"`
-	Version          string                             `json:"version" validate:"required"`
-	DisplayName      Locales                            `json:"displayName" validate:"required"`
-	Description      Locales                            `json:"description" validate:"required"`
-	Category         string                             `json:"category" validate:"required"`
-	Keywords         []string                           `json:"keywords,omitempty"`
-	Home             string                             `json:"home,omitempty"`
-	Sources          []string                           `json:"sources,omitempty"`
-	KubeVersion      string                             `json:"kubeVersion,omitempty"`
-	KSVersion        string                             `json:"ksVersion,omitempty"`
-	Maintainers      []*chart.Maintainer                `json:"maintainers,omitempty"`
-	Provider         map[LanguageCode]*chart.Maintainer `json:"provider" validate:"required"`
-	Icon             string                             `json:"icon" validate:"required"`
-	Screenshots      []string                           `json:"screenshots,omitempty"`
-	Dependencies     []*chart.Dependency                `json:"dependencies,omitempty"`
-	InstallationMode string                             `json:"installationMode,omitempty"`
+	Name             string                                               `json:"name" validate:"required"`
+	Version          string                                               `json:"version" validate:"required"`
+	DisplayName      corev1alpha1.Locales                                 `json:"displayName" validate:"required"`
+	Description      corev1alpha1.Locales                                 `json:"description" validate:"required"`
+	Category         string                                               `json:"category" validate:"required"`
+	Keywords         []string                                             `json:"keywords,omitempty"`
+	Home             string                                               `json:"home,omitempty"`
+	Sources          []string                                             `json:"sources,omitempty"`
+	KubeVersion      string                                               `json:"kubeVersion,omitempty"`
+	KSVersion        string                                               `json:"ksVersion,omitempty"`
+	Maintainers      []*chart.Maintainer                                  `json:"maintainers,omitempty"`
+	Provider         map[corev1alpha1.LanguageCode]*corev1alpha1.Provider `json:"provider" validate:"required"`
+	Icon             string                                               `json:"icon" validate:"required"`
+	Screenshots      []string                                             `json:"screenshots,omitempty"`
+	Dependencies     []*chart.Dependency                                  `json:"dependencies,omitempty"`
+	InstallationMode corev1alpha1.InstallationMode                        `json:"installationMode,omitempty"`
 }
 
 func (md *Metadata) Validate() error {
@@ -72,9 +48,12 @@ func (md *Metadata) Validate() error {
 }
 
 func (md *Metadata) Init(p string) error {
-	err := md.LoadIcon(p)
-	if err != nil {
+	if err := md.LoadIcon(p); err != nil {
 		return err
+	}
+
+	if md.InstallationMode == "" {
+		md.InstallationMode = corev1alpha1.InstallationModeHostOnly
 	}
 	return nil
 }
@@ -122,7 +101,7 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 		KubeVersion:  md.KubeVersion,
 		Home:         md.Home,
 		Dependencies: md.Dependencies,
-		Description:  md.Description.Default(),
+		Description:  string(md.Description[corev1alpha1.DefaultLanguageCode]),
 		Icon:         md.Icon,
 		Maintainers:  md.Maintainers,
 	}
@@ -135,120 +114,102 @@ type Extension struct {
 }
 
 type ApplicationClass struct {
-	ApplicationClassGroup string            `json:"applicationClassGroup,omitempty"`
-	Name                  string            `json:"name,omitempty"`
-	Provisioner           string            `json:"provisioner,omitempty"`
-	Parameters            map[string]string `json:"parameters,omitempty"`
-	AppVersion            string            `json:"appVersion,omitempty"`
-	PackageVersion        string            `json:"packageVersion,omitempty"`
-	Icon                  string            `json:"icon,omitempty"`
-	Description           Locales           `json:"description,omitempty"`
-	Maintainer            *chart.Maintainer `json:"maintainer,omitempty"`
+	ApplicationClassGroup string               `json:"applicationClassGroup,omitempty"`
+	Name                  string               `json:"name,omitempty"`
+	Provisioner           string               `json:"provisioner,omitempty"`
+	Parameters            map[string]string    `json:"parameters,omitempty"`
+	AppVersion            string               `json:"appVersion,omitempty"`
+	PackageVersion        string               `json:"packageVersion,omitempty"`
+	Icon                  string               `json:"icon,omitempty"`
+	Description           corev1alpha1.Locales `json:"description,omitempty"`
+	Maintainer            *chart.Maintainer    `json:"maintainer,omitempty"`
 }
 
-var (
-	extensionTmpl = template.Must(template.New("Extension").Funcs(sprig.FuncMap()).Parse(`
-apiVersion: kubesphere.io/v1alpha1
-kind: Extension
-metadata:
-  name: {{.Name}}
-  labels:
-    kubesphere.io/category: {{.Category | quote}}
-spec:
-  description: {{.Description | toJson}}
-  displayName: {{.DisplayName | toJson}}
-  icon: {{.Icon | quote}}
-  provider: {{.Provider | toJson}}
-status:
-  recommendedVersion: {{.Version}}
-`))
-
-	extensionVersionTmpl = template.Must(template.New("ExtensionVersion").Funcs(sprig.FuncMap()).Parse(`
-apiVersion: kubesphere.io/v1alpha1
-kind: ExtensionVersion
-metadata:
-  name: {{.Name}}-{{.Version}}
-  labels:
-    kubesphere.io/extension-ref: {{.Name}}
-    kubesphere.io/category: {{.Category | quote}}
-spec:
-{{- with .InstallationMode }}
-  installationMode: {{.}}
-{{- end }}
-  chartDataRef:
-    namespace: kubesphere-system
-    name: extension-{{.Name}}-{{.Version}}-chart
-    key: chart.tgz
-  description: {{.Description | toJson}}
-  displayName: {{.DisplayName | toJson}}
-  home: {{.Home | quote}}
-  icon: {{.Icon | quote}}
-  provider: {{.Provider | toJson}}
-  keywords: {{.Keywords | toJson}}
-  ksVersion: {{.KSVersion | quote}}
-  kubeVersion: {{.KubeVersion | quote}}
-  sources: {{.Sources | toJson}}
-  version: {{.Version | quote}}
-  category: {{.Category | quote}}
-  screenshots: {{.Screenshots | toJson}}
-`))
-
-	applicationClassTmpl = template.Must(template.New("ApplicationClass").Funcs(sprig.FuncMap()).Parse(`
-apiVersion: applicationclass.kubesphere.io/v1alpha1
-kind: ApplicationClass
-metadata:
-  name: {{.Name}}-{{.PackageVersion}}
-  labels:
-    applicationclass.kubesphere.io/group: {{.ApplicationClassGroup}}
-provisioner: {{.Provisioner | quote}}
-parameters: {{.Parameters | toJson}}
-spec:
-  appVersion: {{.AppVersion | quote}}
-  packageVersion: {{.PackageVersion | quote}}
-  icon: {{.Icon | quote}}
-  description: {{.Description | toJson}}
-  maintainer: {{.Maintainer | toJson}}
-`))
+const (
+	kubeSphereSystem = "kubesphere-system"
+	configMapDataKey = "chart.tgz"
 )
 
-func (ext *Extension) ToKubernetesResources() ([]byte, error) {
-	// TODO: use kubesphere.io/api
-	var b bytes.Buffer
-	defer func() {
-		b.Reset()
-	}()
+func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
+	cmName := fmt.Sprintf("extension-%s-%s-chart", ext.Metadata.Name, ext.Metadata.Version)
 
-	var cmName = fmt.Sprintf("extension-%s-%s-chart", ext.Metadata.Name, ext.Metadata.Version)
-
-	var cm = v1.ConfigMap{
-		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1",
-			Kind:       "ConfigMap",
+	return []runtimeclient.Object{
+		&corev1alpha1.Extension{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "kubesphere.io/v1alpha1",
+				Kind:       "Extension",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: ext.Metadata.Name,
+				Labels: map[string]string{
+					corev1alpha1.CategoryLabel: ext.Metadata.Category,
+				},
+			},
+			Spec: corev1alpha1.ExtensionSpec{
+				ExtensionInfo: corev1alpha1.ExtensionInfo{
+					Description: ext.Metadata.Description,
+					DisplayName: ext.Metadata.DisplayName,
+					Icon:        ext.Metadata.Icon,
+					Provider:    ext.Metadata.Provider,
+					Created:     metav1.Now(),
+				},
+			},
+			Status: corev1alpha1.ExtensionStatus{
+				RecommendedVersion: ext.Metadata.Version,
+			},
 		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      cmName,
-			Namespace: "kubesphere-system",
+		&corev1alpha1.ExtensionVersion{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "kubesphere.io/v1alpha1",
+				Kind:       "ExtensionVersion",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: fmt.Sprintf("%s-%s", ext.Metadata.Name, ext.Metadata.Version),
+				Labels: map[string]string{
+					corev1alpha1.ExtensionReferenceLabel: ext.Metadata.Name,
+					corev1alpha1.CategoryLabel:           ext.Metadata.Category,
+				},
+			},
+			Spec: corev1alpha1.ExtensionVersionSpec{
+				InstallationMode: ext.Metadata.InstallationMode,
+				ChartDataRef: &corev1alpha1.ConfigMapKeyRef{
+					Namespace: kubeSphereSystem,
+					ConfigMapKeySelector: corev1.ConfigMapKeySelector{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: cmName,
+						},
+						Key: configMapDataKey,
+					},
+				},
+				ExtensionInfo: corev1alpha1.ExtensionInfo{
+					Description: ext.Metadata.Description,
+					DisplayName: ext.Metadata.DisplayName,
+					Icon:        ext.Metadata.Icon,
+					Provider:    ext.Metadata.Provider,
+					Created:     metav1.Now(),
+				},
+				Home:        ext.Metadata.Home,
+				Keywords:    ext.Metadata.Keywords,
+				KSVersion:   ext.Metadata.KSVersion,
+				KubeVersion: ext.Metadata.KubeVersion,
+				Sources:     ext.Metadata.Sources,
+				Version:     ext.Metadata.Version,
+				Category:    ext.Metadata.Category,
+				Screenshots: ext.Metadata.Screenshots,
+			},
 		},
-		BinaryData: map[string][]byte{
-			"chart.tgz": ext.ChartData,
+		&corev1.ConfigMap{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "v1",
+				Kind:       "ConfigMap",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      cmName,
+				Namespace: kubeSphereSystem,
+			},
+			BinaryData: map[string][]byte{
+				configMapDataKey: ext.ChartData,
+			},
 		},
 	}
-	cmByte, err := yaml.Marshal(cm)
-	if err != nil {
-		return nil, err
-	}
-
-	b.Write(cmByte)
-	b.WriteString("\n---\n")
-	err = extensionTmpl.Execute(&b, ext.Metadata)
-	if err != nil {
-		return nil, err
-	}
-	b.WriteString("\n---\n")
-	err = extensionVersionTmpl.Execute(&b, ext.Metadata)
-	if err != nil {
-		return nil, err
-	}
-
-	return b.Bytes(), nil
 }

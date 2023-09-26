@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/otiai10/copy"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -32,6 +34,23 @@ func LoadMetadata(path string) (*Metadata, error) {
 	}
 	return metadata, nil
 }
+
+var applicationClassTmpl = template.Must(template.New("ApplicationClass").Funcs(sprig.FuncMap()).Parse(`
+apiVersion: applicationclass.kubesphere.io/v1alpha1
+kind: ApplicationClass
+metadata:
+  name: {{.Name}}-{{.PackageVersion}}
+  labels:
+    applicationclass.kubesphere.io/group: {{.ApplicationClassGroup}}
+provisioner: {{.Provisioner | quote}}
+parameters: {{.Parameters | toJson}}
+spec:
+  appVersion: {{.AppVersion | quote}}
+  packageVersion: {{.PackageVersion | quote}}
+  icon: {{.Icon | quote}}
+  description: {{.Description | toJson}}
+  maintainer: {{.Maintainer | toJson}}
+`))
 
 func LoadApplicationClass(name, p, tempDir string) error {
 	var b bytes.Buffer

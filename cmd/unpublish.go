@@ -77,7 +77,7 @@ func (o *unpublishOptions) unpublish(cmd *cobra.Command, args []string) error {
 
 	return deleteObjs(genericClient, append(objs, &corev1alpha1.InstallPlan{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1alpha1",
+			APIVersion: "kubesphere.io/v1alpha1",
 			Kind:       "InstallPlan",
 		},
 		ObjectMeta: metav1.ObjectMeta{
@@ -85,7 +85,7 @@ func (o *unpublishOptions) unpublish(cmd *cobra.Command, args []string) error {
 		},
 	}, &corev1alpha1.Extension{
 		TypeMeta: metav1.TypeMeta{
-			APIVersion: "v1alpha1",
+			APIVersion: "kubesphere.io/v1alpha1",
 			Kind:       "Extension",
 		},
 		ObjectMeta: metav1.ObjectMeta{
