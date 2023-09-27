@@ -10,6 +10,7 @@ import (
 
 	"helm.sh/helm/v3/pkg/chart"
 	"k8s.io/apimachinery/pkg/util/sets"
+	corev1alpha1 "kubesphere.io/api/core/v1alpha1"
 	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/pkg/extension"
@@ -17,15 +18,15 @@ import (
 
 type Extension struct {
 	ChartMetadata      *chart.Metadata
-	DisplayName        extension.Locales
-	Description        extension.Locales
-	README             extension.Locales
-	Changelog          extension.Locales
+	DisplayName        corev1alpha1.Locales
+	Description        corev1alpha1.Locales
+	README             corev1alpha1.Locales
+	Changelog          corev1alpha1.Locales
 	Category           string
 	KSVersion          string
 	Screenshots        []string
-	Provider           map[extension.LanguageCode]*chart.Maintainer
-	SupportedLanguages []extension.LanguageCode
+	Provider           map[corev1alpha1.LanguageCode]*corev1alpha1.Provider
+	SupportedLanguages []corev1alpha1.LanguageCode
 }
 
 func ParseExtension(name string, zipFile []byte) (*Extension, error) {
@@ -47,21 +48,21 @@ func ParseExtension(name string, zipFile []byte) (*Extension, error) {
 	descriptionLanguages := sets.KeySet(metadata.Description)
 	supportedLanguages := displayNameLanguages.Intersection(descriptionLanguages).UnsortedList()
 
-	readmeData := extension.Locales{}
+	readmeData := corev1alpha1.Locales{}
 	for _, lang := range supportedLanguages {
 		readmeFileName := "README.md"
-		if lang != extension.LanguageCodeEn {
+		if lang != corev1alpha1.LanguageCodeEn {
 			readmeFileName = fmt.Sprintf("README_%s.md", lang)
 		}
-		readmeData[lang] = string(data[path.Join(name, readmeFileName)])
+		readmeData[lang] = corev1alpha1.LocaleString(data[path.Join(name, readmeFileName)])
 	}
-	changelogData := extension.Locales{}
+	changelogData := corev1alpha1.Locales{}
 	for _, lang := range supportedLanguages {
 		changelogFileName := "CHANGELOG.md"
-		if lang != extension.LanguageCodeEn {
+		if lang != corev1alpha1.LanguageCodeEn {
 			changelogFileName = fmt.Sprintf("CHANGELOG_%s.md", lang)
 		}
-		changelogData[lang] = string(data[path.Join(name, changelogFileName)])
+		changelogData[lang] = corev1alpha1.LocaleString(data[path.Join(name, changelogFileName)])
 	}
 
 	return &Extension{
