@@ -112,10 +112,7 @@ func LoadApplicationClass(name, p, tempDir string) error {
 	if err = applicationClassTmpl.Execute(&b, appClass); err != nil {
 		return err
 	}
-	if err = os.WriteFile(filePath+"/templates/applicationclass.yaml", b.Bytes(), 0644); err != nil {
-		return err
-	}
-	return nil
+	return os.WriteFile(filePath+"/templates/applicationclass.yaml", b.Bytes(), 0644)
 }
 
 func Load(path string) (*Extension, error) {

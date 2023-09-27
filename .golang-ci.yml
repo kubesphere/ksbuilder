@@ -1,15 +1,23 @@
-linters-settings:
-  lll:
-    line-length: 130
+run:
+  timeout: 5m
+  go: 1.19
+
 linters:
-  enable-all: true
+  enable:
+  - revive
+  - goconst
+  - gofmt
+  - goimports
+  - misspell
+  - unparam
   disable:
-    - testpackage
-    - forbidigo
-    - paralleltest
-    - exhaustivestruct
-    - varnamelen
-    - interfacer
-    - maligned
-    - scopelint
-    - golint
+  - deadcode
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+  - path: _test.go
+    linters:
+    - errcheck
+  exclude:
+  - (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)

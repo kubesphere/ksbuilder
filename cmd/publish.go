@@ -37,7 +37,7 @@ func publishExtensionCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *publishOptions) publish(cmd *cobra.Command, args []string) error {
+func (o *publishOptions) publish(_ *cobra.Command, args []string) error {
 	pwd, _ := os.Getwd()
 	p := path.Join(pwd, args[0])
 	fmt.Printf("publish extension %s\n", args[0])
