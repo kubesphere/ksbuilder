@@ -1,6 +1,6 @@
 # Introduction
 
-ksbuilder is a CLI tool to initialize, create, and publish KubeSphere extensions.
+ksbuilder is a CLI tool to create, publish, and manage KubeSphere extensions.
 
 ## Install
 
@@ -9,52 +9,60 @@ Download the [latest ksbuilder release](https://github.com/kubesphere/ksbuilder/
 tar xvzf ksbuilder_<version>_<arch>.tar.gz -C /usr/local/bin/
 ```
 
-## Initialize a KubeSphere extension project
-
-You can initialize a KubeSphere extension project as below:
-
-```
-// init a project
-ksbuilder init <project-directory>
-```
-
 ## Create your first KubeSphere extension
 
 You can use `ksbuilder create` to create a KubeSphere extension interactively.
 
-```shell
-cd <project-directory>
-ksbuilder create <extension-name>
+```
+$ cd <project-directory>
+$ ksbuilder create
+
+Please input extension name: test
+✔ ai-machine-learning
+Please input extension author: ia
+Please input Email (optional):
+Please input author's URL (optional):
+Directory: /path/test
+
+The extension charts has been created.
 ```
 
 The extension directory created looks like below:
 
 ```
 .
-├── Chart.yaml
+├── README.md
+├── README_zh.md
+├── applicationclass.yaml
 ├── charts
-│     ├── backend
-│     │     ├── Chart.yaml
-│     │     ├── templates
-│     │     │     ├── NOTES.txt
-│     │     │     ├── deployment.yaml
-│     │     │     ├── extensions.yaml
-│     │     │     ├── helps.tpl
-│     │     │     ├── service.yaml
-│     │     │     └── tests
-│     │     │         └── test-connection.yaml
-│     │     └── values.yaml
-│     └── frontend
-│         ├── Chart.yaml
-│         ├── templates
-│         │     ├── NOTES.txt
-│         │     ├── deployment.yaml
-│         │     ├── extensions.yaml
-│         │     ├── helps.tpl
-│         │     ├── service.yaml
-│         │     └── tests
-│         │         └── test-connection.yaml
-│         └── values.yaml
+│   ├── backend
+│   │   ├── Chart.yaml
+│   │   ├── templates
+│   │   │   ├── NOTES.txt
+│   │   │   ├── deployment.yaml
+│   │   │   ├── extensions.yaml
+│   │   │   ├── helps.tpl
+│   │   │   ├── service.yaml
+│   │   │   └── tests
+│   │   │       └── test-connection.yaml
+│   │   └── values.yaml
+│   └── frontend
+│       ├── Chart.yaml
+│       ├── templates
+│       │   ├── NOTES.txt
+│       │   ├── deployment.yaml
+│       │   ├── extensions.yaml
+│       │   ├── helps.tpl
+│       │   ├── service.yaml
+│       │   └── tests
+│       │       └── test-connection.yaml
+│       └── values.yaml
+├── extension.yaml
+├── permissions.yaml
+├── static
+│   ├── favicon.svg
+│   └── screenshots
+│       └── screenshot.png
 └── values.yaml
 ```
 
@@ -93,7 +101,6 @@ status:
 
 - Add `JSBundle` definition to the frontend `extensions.yaml`
 
-
 ```yaml
 apiVersion: extensions.kubesphere.io/v1alpha1
 kind: JSBundle
@@ -109,22 +116,10 @@ status:
 
 Please refer to [KubeSphere extension development guide](https://dev-guide.kubesphere.io/extension-dev-guide/zh/development-procedure/) for more details on extension development.
 
-## Install or upgrade your KubeSphere extension
+## Publish/Unpublish your KubeSphere extension
 
-You can use the following command to install a KubeSphere extension.
-```
-ksbuilder install <extension-name>
-```
-
-You can use the following command to upgrade a KubeSphere extension.
-```
-ksbuilder update <extension-name>
-``````
-
-## Publish your KubeSphere extension
-
-You can publish KubeSphere extension to KubeSphere Cloud once it's ready:
+You can publish/unpublish KubeSphere extension to KubeSphere cluster once it's ready:
 
 ```shell
-ksbuilder publish <extension-name>
+ksbuilder publish/unpublish <extension-name>
 ```
