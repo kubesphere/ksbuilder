@@ -50,10 +50,7 @@ func Create(p string, config Config) error {
 			return err
 		}
 		defer f.Close() // nolint
-		if err = t.Execute(f, config); err != nil {
-			return err
-		}
-		return nil
+		return t.Execute(f, config)
 	})
 }
 
@@ -79,8 +76,5 @@ func CreateAppChart(p string, name string, chart []byte) error {
 	}
 
 	filePath := path.Join(p, "application-package.yaml")
-	if err = os.WriteFile(filePath, cmByte, 0644); err != nil {
-		return err
-	}
-	return nil
+	return os.WriteFile(filePath, cmByte, 0644)
 }

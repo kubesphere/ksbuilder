@@ -37,7 +37,7 @@ func unpublishExtensionCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *unpublishOptions) unpublish(cmd *cobra.Command, args []string) error {
+func (o *unpublishOptions) unpublish(_ *cobra.Command, args []string) error {
 	name := args[0]
 	fmt.Printf("unpublish extension %s\n", name)
 

@@ -33,7 +33,7 @@ func packageExtensionCmd() *cobra.Command {
 	return cmd
 }
 
-func (o *packageOptions) packageCmd(cmd *cobra.Command, args []string) error {
+func (o *packageOptions) packageCmd(_ *cobra.Command, args []string) error {
 	pwd, _ := os.Getwd()
 	p := path.Join(pwd, args[0])
 	fmt.Printf("package extension %s\n", args[0])

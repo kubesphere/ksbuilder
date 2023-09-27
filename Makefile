@@ -18,10 +18,6 @@ install: ## install golang binary
 run: ## run the app
 	@go run -ldflags "-X main.version=$(shell git describe --abbrev=0 --tags)"  main.go
 
-.PHONY: fmtcheck
-fmtcheck: ## run gofmt and print detected files
-	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
-
 PHONY: test
 test: ## run go tests
 	go test -v ./...
@@ -32,7 +28,7 @@ clean: ## clean up environment
 
 PHONY: cover
 cover: ## display test coverage
-	go test -v -race $(shell go list ./... | grep -v /vendor/) -v -coverprofile=coverage.out
+	go test -v -race ./... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 
 PHONY: fmt
@@ -46,16 +42,3 @@ lint: ## lint go files
 PHONY: lint-fix
 lint-fix: ## fix
 	golangci-lint run -c .golang-ci.yml --fix
-
-.PHONY: docker-build
-docker-build: ## dockerize golang application
-	@docker build --tag $(projectname) .
-
-.PHONY: docker-run
-docker-run:
-	@docker run $(projectname)
-
-.PHONY: pre-commit
-pre-commit:	## run pre-commit hooks
-	pre-commit run
-
