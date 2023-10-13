@@ -2,8 +2,6 @@ module github.com/kubesphere/ksbuilder
 
 go 1.21
 
-toolchain go1.21.1
-
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/go-playground/validator/v10 v10.14.1
