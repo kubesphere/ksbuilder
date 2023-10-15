@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 name: backend
 description: Backend of [[ .Name ]] extension.
 type: application
