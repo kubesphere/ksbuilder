@@ -43,8 +43,31 @@ type Metadata struct {
 	InstallationMode corev1alpha1.InstallationMode                        `json:"installationMode,omitempty"`
 }
 
+func (md *Metadata) validateLanguageCode() error {
+	m := make(map[corev1alpha1.LanguageCode]int)
+	for k := range md.DisplayName {
+		m[k]++
+	}
+	for k := range md.Description {
+		m[k]++
+	}
+	for k := range md.Provider {
+		m[k]++
+	}
+
+	for k, v := range m {
+		if v != 3 {
+			return fmt.Errorf("validate language code failed: only some multi-language sections include the %s language.\nIf you want to support a language, make sure all multi-language sections(displayName, description and provider etc.) include that language", k)
+		}
+	}
+	return nil
+}
+
 func (md *Metadata) Validate() error {
-	return validator.New().Struct(md)
+	if err := validator.New().Struct(md); err != nil {
+		return err
+	}
+	return md.validateLanguageCode()
 }
 
 func (md *Metadata) Init(p string) error {

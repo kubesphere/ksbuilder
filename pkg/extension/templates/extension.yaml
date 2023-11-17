@@ -20,6 +20,10 @@ maintainers:
     email: "[[ .Email ]]"
     url: "[[ .URL ]]"
 provider:
+  zh:
+    name: "[[ .Author ]]"
+    email: "[[ .Email ]]"
+    url: "[[ .URL ]]"
   en:
     name: "[[ .Author ]]"
     email: "[[ .Email ]]"
