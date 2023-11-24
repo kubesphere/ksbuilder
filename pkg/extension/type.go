@@ -18,8 +18,16 @@ import (
 )
 
 var Categories = []string{
-	"ai-machine-learning", "database", "integration-delivery", "monitoring-logging", "networking", "security",
-	"storage", "streaming-messaging",
+	"ai-machine-learning",
+	"computing",
+	"database",
+	"dev-tools",
+	"integration-delivery",
+	"monitoring-logging",
+	"networking",
+	"security",
+	"storage",
+	"streaming-messaging",
 }
 
 type Metadata struct {
