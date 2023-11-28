@@ -13,8 +13,8 @@ keywords:
 home: https://kubesphere.io
 sources:
   - https://github.com/kubesphere
-kubeVersion: ">=1.19.0"
-ksVersion: ">=4.0.0-alpha"
+kubeVersion: ">=1.19.0-0"
+ksVersion: ">=4.0.0-0"
 maintainers:
   - name: "[[ .Author ]]"
     email: "[[ .Email ]]"
