@@ -28,6 +28,7 @@ var Categories = []string{
 	"security",
 	"storage",
 	"streaming-messaging",
+	"other",
 }
 
 type Metadata struct {
