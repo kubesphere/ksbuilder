@@ -1,4 +1,4 @@
-package parser
+package utils
 
 import (
 	"archive/tar"
@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-func unzip(zipFile []byte) (map[string][]byte, error) {
+func Unzip(zipFile []byte) (map[string][]byte, error) {
 	gr, err := gzip.NewReader(bytes.NewReader(zipFile))
 	if err != nil {
 		return nil, err
