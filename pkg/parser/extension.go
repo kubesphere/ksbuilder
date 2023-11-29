@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/pkg/extension"
+	"github.com/kubesphere/ksbuilder/pkg/utils"
 )
 
 type Extension struct {
@@ -30,7 +31,7 @@ type Extension struct {
 }
 
 func ParseExtension(name string, zipFile []byte) (*Extension, error) {
-	data, err := unzip(zipFile)
+	data, err := utils.Unzip(zipFile)
 	if err != nil {
 		return nil, err
 	}

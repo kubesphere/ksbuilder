@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
+	ospath "path"
+	"path/filepath"
+	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -13,6 +15,8 @@ import (
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
 	"sigs.k8s.io/yaml"
+
+	"github.com/kubesphere/ksbuilder/pkg/utils"
 )
 
 const MetadataFilename = "extension.yaml"
@@ -52,13 +56,13 @@ spec:
   maintainer: {{.Maintainer | toJson}}
 `))
 
-func LoadApplicationClass(name, p, tempDir string) error {
+func LoadApplicationClass(name, tempDir string) error {
 	var b bytes.Buffer
 	defer func() {
 		b.Reset()
 	}()
 
-	content, err := os.ReadFile(p + "/applicationclass.yaml")
+	content, err := os.ReadFile(tempDir + "/applicationclass.yaml")
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil
@@ -75,7 +79,7 @@ func LoadApplicationClass(name, p, tempDir string) error {
 		return nil
 	}
 
-	filePath := path.Join(tempDir, "charts/applicationclass")
+	filePath := ospath.Join(tempDir, "charts/applicationclass")
 	if err = os.MkdirAll(filePath, 0644); err != nil {
 		return err
 	}
@@ -115,23 +119,64 @@ func LoadApplicationClass(name, p, tempDir string) error {
 	return os.WriteFile(filePath+"/templates/applicationclass.yaml", b.Bytes(), 0644)
 }
 
-func Load(path string) (*Extension, error) {
-	metadata, err := LoadMetadata(path)
+func removeOutDir(path string) string {
+	// aaa/xxx.md -> xxx.md
+	// aaa/bbb/xxx.md -> bbb/xxx.md
+	elements := strings.Split(path, "/")
+	if len(elements) == 1 {
+		return path
+	}
+	return filepath.Join(elements[1:]...)
+}
+
+func writeFilesToTempDir(path, tempDir string) error {
+	fileInfo, err := os.Stat(path)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	if fileInfo.IsDir() {
+		return copy.Copy(path, tempDir)
 	}
 
-	var extension Extension
-	extension.Metadata = metadata
+	// the path is a zip file
+	zipFile, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	data, err := utils.Unzip(zipFile)
+	if err != nil {
+		return err
+	}
+	for name, content := range data {
+		p := ospath.Join(tempDir, removeOutDir(name))
+		dir, _ := filepath.Split(p)
+		if err = os.MkdirAll(dir, 0700); err != nil && !os.IsExist(err) {
+			return err
+		}
+		if err = os.WriteFile(p, content, 0644); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func Load(path string) (*Extension, error) {
 	tempDir, err := os.MkdirTemp("", "chart")
 	if err != nil {
 		return nil, err
 	}
 	defer os.RemoveAll(tempDir) // nolint
 
-	if err = copy.Copy(path, tempDir); err != nil {
+	if err = writeFilesToTempDir(path, tempDir); err != nil {
 		return nil, err
 	}
+
+	metadata, err := LoadMetadata(tempDir)
+	if err != nil {
+		return nil, err
+	}
+	var extension Extension
+	extension.Metadata = metadata
 
 	chartYaml, err := metadata.ToChartYaml()
 	if err != nil {
@@ -147,7 +192,7 @@ func Load(path string) (*Extension, error) {
 		return nil, err
 	}
 
-	if err = LoadApplicationClass(metadata.Name, path, tempDir); err != nil {
+	if err = LoadApplicationClass(metadata.Name, tempDir); err != nil {
 		return nil, err
 	}
 
