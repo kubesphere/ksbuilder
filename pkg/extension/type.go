@@ -3,6 +3,7 @@ package extension
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/kubesphere/ksbuilder/pkg/iso639"
 	"mime"
 	"net/http"
 	"os"
@@ -52,21 +53,27 @@ type Metadata struct {
 	InstallationMode corev1alpha1.InstallationMode                        `json:"installationMode,omitempty"`
 }
 
-func (md *Metadata) validateLanguageCode() error {
-	m := make(map[corev1alpha1.LanguageCode]int)
-	for k := range md.DisplayName {
-		m[k]++
+func validateLanguageCode(code corev1alpha1.LanguageCode) error {
+	if !iso639.IsValidLanguageCode(code) {
+		return fmt.Errorf("invalid language code %s, see https://www.loc.gov/standards/iso639-2/php/code_list.php for more details", code)
 	}
-	for k := range md.Description {
-		m[k]++
-	}
-	for k := range md.Provider {
-		m[k]++
-	}
+	return nil
+}
 
-	for k, v := range m {
-		if v != 3 {
-			return fmt.Errorf("validate language code failed: only some multi-language sections include the %s language.\nIf you want to support a language, make sure all multi-language sections(displayName, description and provider etc.) include that language", k)
+func (md *Metadata) validateLanguageCode() error {
+	for code := range md.DisplayName {
+		if err := validateLanguageCode(code); err != nil {
+			return err
+		}
+	}
+	for code := range md.Description {
+		if err := validateLanguageCode(code); err != nil {
+			return err
+		}
+	}
+	for code := range md.Provider {
+		if err := validateLanguageCode(code); err != nil {
+			return err
 		}
 	}
 	return nil
