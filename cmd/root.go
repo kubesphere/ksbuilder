@@ -23,6 +23,7 @@ func NewRootCmd(version string) *cobra.Command {
 	cmd.AddCommand(publishExtensionCmd())
 	cmd.AddCommand(packageExtensionCmd())
 	cmd.AddCommand(unpublishExtensionCmd())
+	cmd.AddCommand(validateExtensionCmd())
 
 	return cmd
 }
