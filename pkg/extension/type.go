@@ -3,7 +3,6 @@ package extension
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/kubesphere/ksbuilder/pkg/iso639"
 	"mime"
 	"net/http"
 	"os"
@@ -16,6 +15,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1alpha1 "kubesphere.io/api/core/v1alpha1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/kubesphere/ksbuilder/pkg/iso639"
 )
 
 var Categories = []string{
@@ -51,6 +52,7 @@ type Metadata struct {
 	Screenshots      []string                                             `json:"screenshots,omitempty"`
 	Dependencies     []*chart.Dependency                                  `json:"dependencies,omitempty"`
 	InstallationMode corev1alpha1.InstallationMode                        `json:"installationMode,omitempty"`
+	Namespace        string                                               `json:"namespace,omitempty"`
 }
 
 func validateLanguageCode(code corev1alpha1.LanguageCode) error {
@@ -227,6 +229,7 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 					Provider:    ext.Metadata.Provider,
 					Created:     metav1.Now(),
 				},
+				Namespace:   ext.Metadata.Namespace,
 				Home:        ext.Metadata.Home,
 				Keywords:    ext.Metadata.Keywords,
 				KSVersion:   ext.Metadata.KSVersion,

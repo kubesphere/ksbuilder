@@ -42,6 +42,8 @@ dependencies:
 # In Multicluster mode, the subchart with tag `extension` will only be deployed to the host cluster,
 # and the subchart with tag `agent` will be deployed to all selected clusters.
 installationMode: HostOnly
+# Custom namespace example: If not specified, it will be installed in the namespace named extension-{name}.
+#namespace: ""
 # external dependencies example
 #externalDependencies:
 #  - name: a
