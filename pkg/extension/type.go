@@ -25,7 +25,7 @@ var Categories = []string{
 	"database",
 	"dev-tools",
 	"integration-delivery",
-	"monitoring-logging",
+	"observability",
 	"networking",
 	"security",
 	"storage",
