@@ -53,6 +53,7 @@ type Metadata struct {
 	Dependencies     []*chart.Dependency                                  `json:"dependencies,omitempty"`
 	InstallationMode corev1alpha1.InstallationMode                        `json:"installationMode,omitempty"`
 	Namespace        string                                               `json:"namespace,omitempty"`
+	Images           []string                                             `json:"images,omitempty"`
 }
 
 func validateLanguageCode(code corev1alpha1.LanguageCode) error {
