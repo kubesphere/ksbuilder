@@ -1,4 +1,0 @@
-global:
-  imageRegistry: "quay.io"
-  nodeSelector:
-    kubernetes.io/os: linux
