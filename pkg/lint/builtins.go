@@ -11,12 +11,13 @@ import (
 	"helm.sh/helm/v3/pkg/engine"
 	"helm.sh/helm/v3/pkg/getter"
 	"k8s.io/apimachinery/pkg/util/rand"
-	"k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/pkg/extension"
 )
 
 func WithBuiltins(paths []string) error {
+	fmt.Print("\n#################### lint by kubesphere ####################\n")
 	ext, err := extension.Load(paths[0])
 	if err != nil {
 		return err
@@ -37,7 +38,7 @@ func WithBuiltins(paths []string) error {
 			name: "global.imageRegistry",
 			key:  rand.String(12),
 			valueFunc: func(v *validator) string {
-				return fmt.Sprintf("Values.global.imageRegistry=%s", v.key)
+				return fmt.Sprintf("global.imageRegistry=%s", v.key)
 			},
 			output: make(map[string]string),
 		},
@@ -45,7 +46,7 @@ func WithBuiltins(paths []string) error {
 			name: "global.nodeSelector",
 			key:  rand.String(12),
 			valueFunc: func(v *validator) string {
-				return fmt.Sprintf("Values.global.nodeSelector=\"kubernetes.io/os: %s\"", v.key)
+				return fmt.Sprintf("global.nodeSelector=\"kubernetes.io/os: %s\"", v.key)
 			},
 			output: make(map[string]string),
 		},
@@ -66,7 +67,24 @@ func WithBuiltins(paths []string) error {
 		return err
 	}
 
-	files, err := engine.Render(chartRequested, vals)
+	topVals, err := chartutil.CoalesceValues(chartRequested, vals)
+	if err != nil {
+		return err
+	}
+	top := map[string]interface{}{
+		"Chart":        chartRequested.Metadata,
+		"Capabilities": chartutil.DefaultCapabilities.Copy(),
+		// set Release undefined
+		"Release": map[string]interface{}{
+			"Name":      "undefined",
+			"Namespace": "undefined",
+			"Revision":  1,
+			"Service":   "Helm",
+		},
+		"Values": topVals,
+	}
+
+	files, err := engine.Render(chartRequested, top)
 	if err != nil {
 		return err
 	}
@@ -113,10 +131,10 @@ func (v *validator) Validate(fileName string, fileData string) error {
 }
 
 func (v *validator) Output() {
+	fmt.Printf("INFO: \"%s\" is valid in: \n", v.name)
 	if len(v.output) != 0 {
-		fmt.Printf("\"%s\" is valid in: \n", v.name)
 		for fileName, keyStr := range v.output {
-			fmt.Printf("%s: \n%s", fileName, keyStr)
+			fmt.Printf("  %s: \n%s", fileName, keyStr)
 		}
 		fmt.Print("\n")
 	}

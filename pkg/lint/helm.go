@@ -14,6 +14,7 @@ import (
 )
 
 func WithHelm(client *action.Lint, valueOpts *values.Options, paths []string) error {
+	fmt.Print("\n#################### lint by helm ####################\n")
 	if client.WithSubcharts {
 		for _, p := range paths {
 			if err := filepath.Walk(filepath.Join(p, "charts"), func(path string, info os.FileInfo, err error) error {
