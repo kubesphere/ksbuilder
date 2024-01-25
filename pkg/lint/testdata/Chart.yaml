@@ -1,5 +1,0 @@
-apiVersion: v1
-appVersion: 0.3.0
-description: A test for the linting Charts
-name: lint-test
-version: 0.3.0
