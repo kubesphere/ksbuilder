@@ -106,12 +106,12 @@ func lintAll(basedir string, values map[string]interface{}, namespace string, st
 	// For ks-extension it's not exist.
 	//rules.Chartfile(&linter)
 	rules.ValuesWithOverrides(&linter, values)
-	lintTemplates(&linter, values, namespace, strict, metadata)
-	lintDependencies(&linter, metadata)
+	lintTemplates(&linter, values, namespace, strict, *metadata)
+	lintDependencies(&linter, *metadata)
 	return linter
 }
 
-func lintTemplates(linter *support.Linter, values map[string]interface{}, namespace string, strict bool, metadata *chart.Metadata) {
+func lintTemplates(linter *support.Linter, values map[string]interface{}, namespace string, strict bool, metadata chart.Metadata) {
 	fpath := "templates/"
 	templatesPath := filepath.Join(linter.ChartDir, fpath)
 
@@ -124,7 +124,7 @@ func lintTemplates(linter *support.Linter, values map[string]interface{}, namesp
 
 	// Load chart and parse templates
 	//chart, err := LoadHelmCharts(linter.ChartDir)
-	chart, err := Load(linter.ChartDir, metadata)
+	chart, err := Load(linter.ChartDir, &metadata)
 	if err != nil {
 		return
 	}
@@ -233,8 +233,8 @@ func lintTemplates(linter *support.Linter, values map[string]interface{}, namesp
 // Dependencies runs lints against a chart's dependencies
 //
 // See https://github.com/helm/helm/issues/7910
-func lintDependencies(linter *support.Linter, metadata *chart.Metadata) {
-	c, err := Load(linter.ChartDir, metadata)
+func lintDependencies(linter *support.Linter, metadata chart.Metadata) {
+	c, err := Load(linter.ChartDir, &metadata)
 	if !linter.RunLinterRule(support.ErrorSev, "", validateChartFormat(err)) {
 		return
 	}
