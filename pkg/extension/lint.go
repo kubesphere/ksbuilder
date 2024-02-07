@@ -137,16 +137,16 @@ func WithBuiltins(paths []string) error {
 		{
 			name: "global.imageRegistry",
 			key:  rand.String(12),
-			valueFunc: func(v *lintValuesValidator) string {
-				return fmt.Sprintf("global.imageRegistry=%s", v.key)
+			valueFunc: func(key string, value *values.Options) {
+				value.Values = append(value.Values, fmt.Sprintf("global.imageRegistry=%s", key))
 			},
 			output: make(map[string]string),
 		},
 		{
 			name: "global.nodeSelector",
 			key:  rand.String(12),
-			valueFunc: func(v *lintValuesValidator) string {
-				return fmt.Sprintf("global.nodeSelector=\"kubernetes.io/os: %s\"", v.key)
+			valueFunc: func(key string, value *values.Options) {
+				value.JSONValues = append(value.JSONValues, fmt.Sprintf("global.nodeSelector={\"kubernetes.io/os\": \"%s\"}", key))
 			},
 			output: make(map[string]string),
 		},
@@ -154,7 +154,7 @@ func WithBuiltins(paths []string) error {
 
 	valueOpts := &values.Options{}
 	for _, vt := range valueValidators {
-		valueOpts.Values = append(valueOpts.Values, vt.InitValue())
+		vt.InitValue(valueOpts)
 	}
 
 	p := getter.All(cli.New())
@@ -208,12 +208,12 @@ func WithBuiltins(paths []string) error {
 type lintValuesValidator struct {
 	name      string
 	key       string
-	valueFunc func(v *lintValuesValidator) string
+	valueFunc func(unique string, value *values.Options)
 	output    map[string]string
 }
 
-func (v *lintValuesValidator) InitValue() string {
-	return v.valueFunc(v)
+func (v *lintValuesValidator) InitValue(value *values.Options) {
+	v.valueFunc(v.key, value)
 }
 
 func (v *lintValuesValidator) Validate(fileName string, fileData string) error {
@@ -224,7 +224,7 @@ func (v *lintValuesValidator) Validate(fileName string, fileData string) error {
 			if err := yaml.Unmarshal([]byte(y), &yamlMap); err != nil {
 				return err
 			}
-			v.output[fileName] += fmt.Sprintf("name: %s, groupVersion: %s, kind: %s \n", yamlMap["metadata"].(map[string]any)["name"], yamlMap["apiVersion"], yamlMap["kind"])
+			v.output[fileName] += fmt.Sprintf("  name: %s, groupVersion: %s, kind: %s \n", yamlMap["metadata"].(map[string]any)["name"], yamlMap["apiVersion"], yamlMap["kind"])
 		}
 	}
 	return nil
@@ -234,7 +234,7 @@ func (v *lintValuesValidator) Output() {
 	fmt.Printf("INFO: \"%s\" is valid in: \n", v.name)
 	if len(v.output) != 0 {
 		for fileName, keyStr := range v.output {
-			fmt.Printf("  %s: \n%s", fileName, keyStr)
+			fmt.Printf("%s: \n%s", fileName, keyStr)
 		}
 		fmt.Print("\n")
 	}

@@ -28,7 +28,7 @@ clean: ## clean up environment
 
 PHONY: cover
 cover: ## display test coverage
-	go test -v -race ./... -coverprofile=coverage.out
+	go test -v ./... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 
 PHONY: fmt
