@@ -36,24 +36,25 @@ var Categories = []string{
 type Metadata struct {
 	APIVersion string `json:"apiVersion" validate:"required"`
 	// The name of the chart. Required.
-	Name             string                                               `json:"name" validate:"required"`
-	Version          string                                               `json:"version" validate:"required"`
-	DisplayName      corev1alpha1.Locales                                 `json:"displayName" validate:"required"`
-	Description      corev1alpha1.Locales                                 `json:"description" validate:"required"`
-	Category         string                                               `json:"category" validate:"required"`
-	Keywords         []string                                             `json:"keywords,omitempty"`
-	Home             string                                               `json:"home,omitempty"`
-	Sources          []string                                             `json:"sources,omitempty"`
-	KubeVersion      string                                               `json:"kubeVersion,omitempty"`
-	KSVersion        string                                               `json:"ksVersion,omitempty"`
-	Maintainers      []*chart.Maintainer                                  `json:"maintainers,omitempty"`
-	Provider         map[corev1alpha1.LanguageCode]*corev1alpha1.Provider `json:"provider" validate:"required"`
-	Icon             string                                               `json:"icon" validate:"required"`
-	Screenshots      []string                                             `json:"screenshots,omitempty"`
-	Dependencies     []*chart.Dependency                                  `json:"dependencies,omitempty"`
-	InstallationMode corev1alpha1.InstallationMode                        `json:"installationMode,omitempty"`
-	Namespace        string                                               `json:"namespace,omitempty"`
-	Images           []string                                             `json:"images,omitempty"`
+	Name                 string                                               `json:"name" validate:"required"`
+	Version              string                                               `json:"version" validate:"required"`
+	DisplayName          corev1alpha1.Locales                                 `json:"displayName" validate:"required"`
+	Description          corev1alpha1.Locales                                 `json:"description" validate:"required"`
+	Category             string                                               `json:"category" validate:"required"`
+	Keywords             []string                                             `json:"keywords,omitempty"`
+	Home                 string                                               `json:"home,omitempty"`
+	Sources              []string                                             `json:"sources,omitempty"`
+	KubeVersion          string                                               `json:"kubeVersion,omitempty"`
+	KSVersion            string                                               `json:"ksVersion,omitempty"`
+	Maintainers          []*chart.Maintainer                                  `json:"maintainers,omitempty"`
+	Provider             map[corev1alpha1.LanguageCode]*corev1alpha1.Provider `json:"provider" validate:"required"`
+	Icon                 string                                               `json:"icon" validate:"required"`
+	Screenshots          []string                                             `json:"screenshots,omitempty"`
+	Dependencies         []*chart.Dependency                                  `json:"dependencies,omitempty"`
+	InstallationMode     corev1alpha1.InstallationMode                        `json:"installationMode,omitempty"`
+	Namespace            string                                               `json:"namespace,omitempty"`
+	Images               []string                                             `json:"images,omitempty"`
+	ExternalDependencies []corev1alpha1.ExternalDependency                    `json:"externalDependencies,omitempty"`
 }
 
 func validateLanguageCode(code corev1alpha1.LanguageCode) error {
@@ -230,15 +231,16 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 					Provider:    ext.Metadata.Provider,
 					Created:     metav1.Now(),
 				},
-				Namespace:   ext.Metadata.Namespace,
-				Home:        ext.Metadata.Home,
-				Keywords:    ext.Metadata.Keywords,
-				KSVersion:   ext.Metadata.KSVersion,
-				KubeVersion: ext.Metadata.KubeVersion,
-				Sources:     ext.Metadata.Sources,
-				Version:     ext.Metadata.Version,
-				Category:    ext.Metadata.Category,
-				Screenshots: ext.Metadata.Screenshots,
+				Namespace:            ext.Metadata.Namespace,
+				Home:                 ext.Metadata.Home,
+				Keywords:             ext.Metadata.Keywords,
+				KSVersion:            ext.Metadata.KSVersion,
+				KubeVersion:          ext.Metadata.KubeVersion,
+				Sources:              ext.Metadata.Sources,
+				Version:              ext.Metadata.Version,
+				Category:             ext.Metadata.Category,
+				Screenshots:          ext.Metadata.Screenshots,
+				ExternalDependencies: ext.Metadata.ExternalDependencies,
 			},
 		},
 		&corev1.ConfigMap{
