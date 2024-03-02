@@ -169,8 +169,9 @@ type ApplicationClass struct {
 }
 
 const (
-	kubeSphereSystem = "kubesphere-system"
-	configMapDataKey = "chart.tgz"
+	kubeSphereSystem  = "kubesphere-system"
+	configMapDataKey  = "chart.tgz"
+	kubeSphereManaged = "kubesphere.io/managed"
 )
 
 func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
@@ -186,6 +187,7 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 				Name: ext.Metadata.Name,
 				Labels: map[string]string{
 					corev1alpha1.CategoryLabel: ext.Metadata.Category,
+					kubeSphereManaged:          "true",
 				},
 			},
 			Spec: corev1alpha1.ExtensionSpec{
