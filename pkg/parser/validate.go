@@ -39,7 +39,7 @@ func ValidateExtension(name string, zipFile []byte) error {
 			continue
 		}
 		buffer := make([]byte, h.Size)
-		if _, err = tr.Read(buffer); err != nil && err != io.EOF {
+		if _, err = io.ReadFull(tr, buffer); err != nil && err != io.EOF {
 			return fmt.Errorf("read tar file failed: %s", err.Error())
 		}
 		metadata := new(extension.Metadata)
