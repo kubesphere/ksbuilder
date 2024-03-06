@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/iawia002/lia/kubernetes/client"
 	"github.com/iawia002/lia/kubernetes/client/generic"
@@ -36,10 +37,24 @@ func publishExtensionCmd() *cobra.Command {
 }
 
 func (o *publishOptions) publish(_ *cobra.Command, args []string) error {
-	pwd, _ := os.Getwd()
-	p := path.Join(pwd, args[0])
+	// load extension
 	fmt.Printf("publish extension %s\n", args[0])
+	var ext *extension.Extension
+	var err error
+	if strings.HasPrefix(args[0], "oci://") {
+		ext, err = extension.LoadFromHelm(args[0])
+		if err != nil {
+			return err
+		}
+	} else {
+		pwd, _ := os.Getwd()
+		ext, err = extension.Load(path.Join(pwd, args[0]))
+		if err != nil {
+			return err
+		}
+	}
 
+	// init kube client
 	if o.kubeconfig == "" {
 		homeDir, _ := os.UserHomeDir()
 		o.kubeconfig = fmt.Sprintf("%s/.kube/config", homeDir)
@@ -53,10 +68,7 @@ func (o *publishOptions) publish(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	ext, err := extension.Load(p)
-	if err != nil {
-		return err
-	}
+	// apply resources
 	for _, obj := range ext.ToKubernetesResources() {
 		fmt.Printf("creating %s %s\n", obj.GetObjectKind().GroupVersionKind().Kind, obj.GetName())
 		if err = client.Apply(context.Background(), genericClient, obj, client.WithFieldManager("ksbuilder")); err != nil {
