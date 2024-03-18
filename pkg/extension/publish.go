@@ -265,11 +265,7 @@ func LoadFromHelm(path string) (*Extension, error) {
 		return nil, err
 	}
 	extension.Metadata = metadata
-	content, err := os.ReadFile(filepath.Join(tempDir, TarName))
-	if err != nil {
-		return nil, err
-	}
-	extension.ChartData = content
+	extension.ChartURL = path + ":" + version
 
 	return &extension, nil
 }
