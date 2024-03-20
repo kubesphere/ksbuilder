@@ -190,6 +190,10 @@ func WithBuiltins(paths []string) error {
 	}
 
 	for name, content := range files {
+		// only deal yaml files
+		if !strings.HasSuffix(name, ".yaml") && !strings.HasSuffix(name, ".yml") {
+			continue
+		}
 		for _, vt := range valueValidators {
 			if err := vt.Validate(name, content); err != nil {
 				return err
