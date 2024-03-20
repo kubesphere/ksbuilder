@@ -11,9 +11,12 @@ import (
 
 	"github.com/Masterminds/sprig/v3"
 	"github.com/otiai10/copy"
+	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/chartutil"
+	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/registry"
 	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/pkg/utils"
@@ -210,5 +213,59 @@ func Load(path string) (*Extension, error) {
 	}
 
 	extension.ChartData = chartContent
+	return &extension, nil
+}
+
+func LoadFromHelm(path string) (*Extension, error) {
+	tempDir, err := os.MkdirTemp("", "chart")
+	if err != nil {
+		return nil, err
+	}
+	defer os.RemoveAll(tempDir) // nolint
+
+	helmClient := action.NewPullWithOpts(action.WithConfig(new(action.Configuration)))
+	helmClient.DestDir = tempDir
+	helmClient.Settings = cli.New()
+	registryClient, err := registry.NewClient()
+	if err != nil {
+		return nil, err
+	}
+	helmClient.SetRegistryClient(registryClient)
+
+	var version string
+	plist := strings.Split(path, ":")
+	if len(plist) > 2 {
+		version = plist[len(plist)-1]
+		path = strings.Join(plist[:len(plist)-1], ":")
+	}
+	if version == "" {
+		tags, err := registryClient.Tags(strings.TrimPrefix(path, fmt.Sprintf("%s://", registry.OCIScheme)))
+		if err != nil {
+			return nil, err
+		}
+		// set latest tag to version
+		version = tags[0]
+	}
+	helmClient.Version = version
+
+	TarName := fmt.Sprintf("%s-%s.tgz", filepath.Base(path), version)
+
+	// pull file
+	if _, err := helmClient.Run(path); err != nil {
+		return nil, err
+	}
+	// expandFile to tempDir
+	if err := chartutil.ExpandFile(tempDir, filepath.Join(tempDir, TarName)); err != nil {
+		return nil, err
+	}
+
+	var extension Extension
+	metadata, err := LoadMetadata(filepath.Join(tempDir, filepath.Base(path)))
+	if err != nil {
+		return nil, err
+	}
+	extension.Metadata = metadata
+	extension.ChartURL = path + ":" + version
+
 	return &extension, nil
 }

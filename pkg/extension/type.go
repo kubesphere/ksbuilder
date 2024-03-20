@@ -152,7 +152,10 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 }
 
 type Extension struct {
-	Metadata  *Metadata
+	Metadata *Metadata
+	// ChartURL valid when the chart source online.
+	ChartURL string
+	// ChartData valid when the chart source local.
 	ChartData []byte
 }
 
@@ -175,9 +178,7 @@ const (
 )
 
 func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
-	cmName := fmt.Sprintf("extension-%s-%s-chart", ext.Metadata.Name, ext.Metadata.Version)
-
-	return []runtimeclient.Object{
+	var resources = []runtimeclient.Object{
 		&corev1alpha1.Extension{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "kubesphere.io/v1alpha1",
@@ -202,61 +203,67 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 			Status: corev1alpha1.ExtensionStatus{
 				RecommendedVersion: ext.Metadata.Version,
 			},
+		}}
+	extensionVersion := &corev1alpha1.ExtensionVersion{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "kubesphere.io/v1alpha1",
+			Kind:       "ExtensionVersion",
 		},
-		&corev1alpha1.ExtensionVersion{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "kubesphere.io/v1alpha1",
-				Kind:       "ExtensionVersion",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name: fmt.Sprintf("%s-%s", ext.Metadata.Name, ext.Metadata.Version),
-				Labels: map[string]string{
-					corev1alpha1.ExtensionReferenceLabel: ext.Metadata.Name,
-					corev1alpha1.CategoryLabel:           ext.Metadata.Category,
-				},
-			},
-			Spec: corev1alpha1.ExtensionVersionSpec{
-				InstallationMode: ext.Metadata.InstallationMode,
-				ChartDataRef: &corev1alpha1.ConfigMapKeyRef{
-					Namespace: kubeSphereSystem,
-					ConfigMapKeySelector: corev1.ConfigMapKeySelector{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: cmName,
-						},
-						Key: configMapDataKey,
-					},
-				},
-				ExtensionInfo: corev1alpha1.ExtensionInfo{
-					Description: ext.Metadata.Description,
-					DisplayName: ext.Metadata.DisplayName,
-					Icon:        ext.Metadata.Icon,
-					Provider:    ext.Metadata.Provider,
-					Created:     metav1.Now(),
-				},
-				Namespace:            ext.Metadata.Namespace,
-				Home:                 ext.Metadata.Home,
-				Keywords:             ext.Metadata.Keywords,
-				KSVersion:            ext.Metadata.KSVersion,
-				KubeVersion:          ext.Metadata.KubeVersion,
-				Sources:              ext.Metadata.Sources,
-				Version:              ext.Metadata.Version,
-				Category:             ext.Metadata.Category,
-				Screenshots:          ext.Metadata.Screenshots,
-				ExternalDependencies: ext.Metadata.ExternalDependencies,
+		ObjectMeta: metav1.ObjectMeta{
+			Name: fmt.Sprintf("%s-%s", ext.Metadata.Name, ext.Metadata.Version),
+			Labels: map[string]string{
+				corev1alpha1.ExtensionReferenceLabel: ext.Metadata.Name,
+				corev1alpha1.CategoryLabel:           ext.Metadata.Category,
 			},
 		},
-		&corev1.ConfigMap{
+		Spec: corev1alpha1.ExtensionVersionSpec{
+			InstallationMode: ext.Metadata.InstallationMode,
+			ExtensionInfo: corev1alpha1.ExtensionInfo{
+				Description: ext.Metadata.Description,
+				DisplayName: ext.Metadata.DisplayName,
+				Icon:        ext.Metadata.Icon,
+				Provider:    ext.Metadata.Provider,
+				Created:     metav1.Now(),
+			},
+			Namespace:            ext.Metadata.Namespace,
+			Home:                 ext.Metadata.Home,
+			Keywords:             ext.Metadata.Keywords,
+			KSVersion:            ext.Metadata.KSVersion,
+			KubeVersion:          ext.Metadata.KubeVersion,
+			Sources:              ext.Metadata.Sources,
+			Version:              ext.Metadata.Version,
+			Category:             ext.Metadata.Category,
+			Screenshots:          ext.Metadata.Screenshots,
+			ExternalDependencies: ext.Metadata.ExternalDependencies,
+		},
+	}
+	if ext.ChartURL != "" {
+		extensionVersion.Spec.ChartURL = ext.ChartURL
+		resources = append(resources, extensionVersion)
+	} else {
+		configmap := &corev1.ConfigMap{
 			TypeMeta: metav1.TypeMeta{
 				APIVersion: "v1",
 				Kind:       "ConfigMap",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      cmName,
+				Name:      fmt.Sprintf("extension-%s-%s-chart", ext.Metadata.Name, ext.Metadata.Version),
 				Namespace: kubeSphereSystem,
 			},
 			BinaryData: map[string][]byte{
 				configMapDataKey: ext.ChartData,
 			},
-		},
+		}
+		extensionVersion.Spec.ChartDataRef = &corev1alpha1.ConfigMapKeyRef{
+			Namespace: configmap.Namespace,
+			ConfigMapKeySelector: corev1.ConfigMapKeySelector{
+				LocalObjectReference: corev1.LocalObjectReference{
+					Name: configmap.Name,
+				},
+				Key: configMapDataKey,
+			},
+		}
+		resources = append(resources, extensionVersion, configmap)
 	}
+	return resources
 }
