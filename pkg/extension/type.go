@@ -43,6 +43,7 @@ type Metadata struct {
 	Category             string                                               `json:"category" validate:"required"`
 	Keywords             []string                                             `json:"keywords,omitempty"`
 	Home                 string                                               `json:"home,omitempty"`
+	Docs                 string                                               `json:"docs,omitempty"`
 	Sources              []string                                             `json:"sources,omitempty"`
 	KubeVersion          string                                               `json:"kubeVersion,omitempty"`
 	KSVersion            string                                               `json:"ksVersion,omitempty"`
@@ -225,6 +226,7 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 				Provider:    ext.Metadata.Provider,
 				Created:     metav1.Now(),
 			},
+			Docs:                 ext.Metadata.Docs,
 			Namespace:            ext.Metadata.Namespace,
 			Home:                 ext.Metadata.Home,
 			Keywords:             ext.Metadata.Keywords,
