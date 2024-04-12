@@ -34,4 +34,6 @@ func (o *LintOptions) AddFlags(cmd *cobra.Command, f *pflag.FlagSet) {
 	cmd.Flags().StringArrayVar(&o.ValueOpts.StringValues, "set-string", []string{}, "set STRING values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 	cmd.Flags().StringArrayVar(&o.ValueOpts.FileValues, "set-file", []string{}, "set values from respective files specified via the command line (can specify multiple or separate values with commas: key1=path1,key2=path2)")
 	cmd.Flags().StringArrayVar(&o.ValueOpts.JSONValues, "set-json", []string{}, "set JSON values on the command line (can specify multiple or separate values with commas: key1=jsonval1,key2=jsonval2)")
+	cmd.Flags().StringArrayVar(&o.ValueOpts.LiteralValues, "set-literal", []string{}, "set a literal STRING value on the command line")
+
 }

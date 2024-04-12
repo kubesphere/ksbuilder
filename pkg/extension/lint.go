@@ -9,8 +9,6 @@ import (
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chartutil"
-	"helm.sh/helm/v3/pkg/cli"
-	"helm.sh/helm/v3/pkg/cli/values"
 	"helm.sh/helm/v3/pkg/engine"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/lint/support"
@@ -30,7 +28,37 @@ func WithHelm(o *options.LintOptions, paths []string) error {
 					if info.Name() == "Chart.yaml" {
 						paths = append(paths, filepath.Dir(path))
 					} else if strings.HasSuffix(path, ".tgz") || strings.HasSuffix(path, ".tar.gz") {
-						paths = append(paths, path)
+						tempDir, err := os.MkdirTemp("", "helm-lint")
+						if err != nil {
+							return err
+						}
+						file, err := os.Open(path)
+						if err != nil {
+							return err
+						}
+						defer file.Close()
+
+						if err = chartutil.Expand(tempDir, file); err != nil {
+							return err
+						}
+						files, err := os.ReadDir(tempDir)
+						if err != nil {
+							return err
+						}
+						if !files[0].IsDir() {
+							return fmt.Errorf("unexpected file %s in temporary output directory %s", files[0].Name(), tempDir)
+						}
+						paths = append(paths, filepath.Join(tempDir, files[0].Name()))
+						if err := filepath.Walk(filepath.Join(tempDir, files[0].Name(), "charts"), func(path string, info os.FileInfo, err error) error {
+							if info != nil {
+								if info.Name() == "Chart.yaml" {
+									paths = append(paths, filepath.Dir(path))
+								}
+							}
+							return nil
+						}); err != nil {
+							return err
+						}
 					}
 				}
 				return nil
@@ -51,16 +79,24 @@ func WithHelm(o *options.LintOptions, paths []string) error {
 	errorsOrWarnings := 0
 
 	for _, path := range paths {
-		metadata, err := LoadMetadata(paths[0])
-		if err != nil {
-			return err
-		}
-		chartYaml, err := metadata.ToChartYaml()
-		if err != nil {
-			return err
+		var chartmd *chart.Metadata
+		if _, err := os.Stat(path + "/" + "Chart.yaml"); os.IsNotExist(err) {
+			metadata, err := LoadMetadata(path)
+			if err != nil {
+				return err
+			}
+			chartmd, err = metadata.ToChartYaml()
+			if err != nil {
+				return err
+			}
+		} else {
+			chartmd, err = chartutil.LoadChartfile(path + "/" + "Chart.yaml")
+			if err != nil {
+				return err
+			}
 		}
 
-		result := helm.Lint(o.Client, []string{path}, vals, chartYaml)
+		result := helm.Lint(o.Client, []string{path}, vals, chartmd)
 
 		// If there is no errors/warnings and quiet flag is set
 		// go to the next chart
@@ -112,7 +148,7 @@ func WithHelm(o *options.LintOptions, paths []string) error {
 	return nil
 }
 
-func WithBuiltins(paths []string) error {
+func WithBuiltins(o *options.LintOptions, paths []string) error {
 	fmt.Print("\n#################### lint by kubesphere ####################\n")
 	ext, err := Load(paths[0])
 	if err != nil {
@@ -127,26 +163,26 @@ func WithBuiltins(paths []string) error {
 		return err
 	}
 
-	if err := lintExtensionsImages(*chartRequested, paths[0], ext.Metadata.Images); err != nil {
+	if err := lintExtensionsImages(*o, *chartRequested, paths[0], ext.Metadata.Images); err != nil {
 		return err
 	}
-	if err := lintGlobalImageRegistry(*chartRequested, paths[0]); err != nil {
+	if err := lintGlobalImageRegistry(*o, *chartRequested, paths[0]); err != nil {
 		return err
 	}
-	if err := lintGlobalNodeSelector(*chartRequested, paths[0]); err != nil {
+	if err := lintGlobalNodeSelector(*o, *chartRequested, paths[0]); err != nil {
 		return err
 	}
 	return nil
 }
 
-func lintExtensionsImages(charts chart.Chart, extension string, images []string) error {
+func lintExtensionsImages(o options.LintOptions, charts chart.Chart, extension string, images []string) error {
 	fmt.Print("\nInfo: lint images\n")
 	if len(images) == 0 {
 		fmt.Printf("WARNING: extension %s has no images\n", extension)
 		return nil
 	}
 
-	files, err := getTemplateFile(&charts, &values.Options{})
+	files, err := getTemplateFile(&o, &charts)
 	if err != nil {
 		return err
 	}
@@ -157,22 +193,23 @@ func lintExtensionsImages(charts chart.Chart, extension string, images []string)
 			if !strings.HasSuffix(name, ".yaml") && !strings.HasSuffix(name, ".yml") {
 				continue
 			}
-			if strings.Contains(content, image) {
+			if strings.Contains(content, image) ||
+				(strings.HasPrefix(image, "docker.io/") && strings.Contains(content, strings.TrimPrefix(image, "docker.io/"))) ||
+				(strings.HasPrefix(image, "docker.io/library/") && strings.Contains(content, strings.TrimPrefix(image, "docker.io/library/"))) {
 				goto found
 			}
 		}
-		fmt.Printf("ERROR: image %s has not found\n", image)
+		fmt.Printf("WARNING: image %s has not found\n", image)
 	found:
 	}
 	return nil
 }
 
-func lintGlobalNodeSelector(charts chart.Chart, extension string) error {
+func lintGlobalNodeSelector(o options.LintOptions, charts chart.Chart, extension string) error {
 	fmt.Print("\nInfo: lint global.nodeSelector\n")
 	key := rand.String(12)
-	files, err := getTemplateFile(&charts, &values.Options{
-		JSONValues: []string{fmt.Sprintf("global.nodeSelector={\"kubernetes.io/os\": \"%s\"}", key)},
-	})
+	o.ValueOpts.JSONValues = append(o.ValueOpts.JSONValues, fmt.Sprintf("global.nodeSelector={\"kubernetes.io/os\": \"%s\"}", key))
+	files, err := getTemplateFile(&o, &charts)
 	if err != nil {
 		return err
 	}
@@ -211,12 +248,11 @@ func lintGlobalNodeSelector(charts chart.Chart, extension string) error {
 	return nil
 }
 
-func lintGlobalImageRegistry(charts chart.Chart, extension string) error {
+func lintGlobalImageRegistry(o options.LintOptions, charts chart.Chart, extension string) error {
 	fmt.Print("\nInfo: lint global.imageRegistry\n")
 	key := rand.String(12)
-	files, err := getTemplateFile(&charts, &values.Options{
-		Values: []string{fmt.Sprintf("global.imageRegistry=%s", key)},
-	})
+	o.ValueOpts.Values = append(o.ValueOpts.Values, fmt.Sprintf("global.imageRegistry=%s", key))
+	files, err := getTemplateFile(&o, &charts)
 	if err != nil {
 		return err
 	}
@@ -292,9 +328,9 @@ func lintGlobalImageRegistry(charts chart.Chart, extension string) error {
 	return nil
 }
 
-func getTemplateFile(chartRequested *chart.Chart, valueOpts *values.Options) (map[string]string, error) {
-	p := getter.All(cli.New())
-	vals, err := valueOpts.MergeValues(p)
+func getTemplateFile(o *options.LintOptions, chartRequested *chart.Chart) (map[string]string, error) {
+	p := getter.All(o.Settings)
+	vals, err := o.ValueOpts.MergeValues(p)
 	if err != nil {
 		return nil, err
 	}
