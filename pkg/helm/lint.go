@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
+	"github.com/asaskevich/govalidator"
 	"github.com/pkg/errors"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -37,11 +39,7 @@ func Lint(l *action.Lint, paths []string, vals map[string]interface{}, metadata 
 	}
 	result := &action.LintResult{}
 	for _, path := range paths {
-		linter, err := lintChart(path, vals, l.Namespace, l.Strict, metadata)
-		if err != nil {
-			result.Errors = append(result.Errors, err)
-			continue
-		}
+		linter := lintAll(path, vals, l.Namespace, l.Strict, metadata)
 
 		result.Messages = append(result.Messages, linter.Messages...)
 		result.TotalChartsLinted++
@@ -54,49 +52,6 @@ func Lint(l *action.Lint, paths []string, vals map[string]interface{}, metadata 
 	return result
 }
 
-func lintChart(path string, vals map[string]interface{}, namespace string, strict bool, metadata *chart.Metadata) (support.Linter, error) {
-	var chartPath string
-	linter := support.Linter{}
-
-	if strings.HasSuffix(path, ".tgz") || strings.HasSuffix(path, ".tar.gz") {
-		tempDir, err := os.MkdirTemp("", "helm-lint")
-		if err != nil {
-			return linter, errors.Wrap(err, "unable to create temp dir to extract tarball")
-		}
-		defer os.RemoveAll(tempDir)
-
-		file, err := os.Open(path)
-		if err != nil {
-			return linter, errors.Wrap(err, "unable to open tarball")
-		}
-		defer file.Close()
-
-		if err = chartutil.Expand(tempDir, file); err != nil {
-			return linter, errors.Wrap(err, "unable to extract tarball")
-		}
-
-		files, err := os.ReadDir(tempDir)
-		if err != nil {
-			return linter, errors.Wrapf(err, "unable to read temporary output directory %s", tempDir)
-		}
-		if !files[0].IsDir() {
-			return linter, errors.Errorf("unexpected file %s in temporary output directory %s", files[0].Name(), tempDir)
-		}
-
-		chartPath = filepath.Join(tempDir, files[0].Name())
-	} else {
-		chartPath = path
-	}
-
-	// For ks-extension it's not exist.
-	// Guard: Error out if this is not a chart.
-	//if _, err := os.Stat(filepath.Join(chartPath, "Chart.yaml")); err != nil {
-	//	return linter, errors.Wrap(err, "unable to check Chart.yaml file in chart")
-	//}
-
-	return lintAll(chartPath, vals, namespace, strict, metadata), nil
-}
-
 // lintAll runs all of the available linters on the given base directory.
 func lintAll(basedir string, values map[string]interface{}, namespace string, strict bool, metadata *chart.Metadata) support.Linter {
 	// Using abs path to get directory context
@@ -104,11 +59,30 @@ func lintAll(basedir string, values map[string]interface{}, namespace string, st
 
 	linter := support.Linter{ChartDir: chartDir}
 	// For ks-extension it's not exist.
-	//rules.Chartfile(&linter)
+	lintChartfile(&linter, chartDir, *metadata)
 	rules.ValuesWithOverrides(&linter, values)
 	lintTemplates(&linter, values, namespace, strict, *metadata)
 	lintDependencies(&linter, *metadata)
 	return linter
+}
+
+func lintChartfile(linter *support.Linter, chartFilePath string, chartFile chart.Metadata) {
+	var chartFileName = "Chart.yaml"
+	if _, err := os.Stat(chartFilePath + "/" + "Chart.yaml"); os.IsNotExist(err) {
+		chartFileName = "extension.yaml"
+	}
+
+	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartName(chartFile))
+
+	// Chart metadata
+	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartAPIVersion(chartFile))
+	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartVersion(chartFile))
+	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartMaintainer(chartFile))
+	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartSources(chartFile))
+	linter.RunLinterRule(support.InfoSev, chartFileName, validateChartIconPresence(chartFile))
+	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartIconURL(chartFile))
+	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartType(chartFile))
+	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartDependencies(chartFile))
 }
 
 func lintTemplates(linter *support.Linter, values map[string]interface{}, namespace string, strict bool, metadata chart.Metadata) {
@@ -125,9 +99,6 @@ func lintTemplates(linter *support.Linter, values map[string]interface{}, namesp
 	// Load chart and parse templates
 	//chart, err := LoadHelmCharts(linter.ChartDir)
 	chart, err := Load(linter.ChartDir, &metadata)
-	if err != nil {
-		return
-	}
 
 	chartLoaded := linter.RunLinterRule(support.ErrorSev, fpath, err)
 
@@ -538,4 +509,98 @@ type K8sYamlStruct struct {
 type k8sYamlMetadata struct {
 	Namespace string
 	Name      string
+}
+
+// Validate chartfile
+func validateChartName(cf chart.Metadata) error {
+	if cf.Name == "" {
+		return errors.New("name is required")
+	}
+	return nil
+}
+
+func validateChartAPIVersion(cf chart.Metadata) error {
+	if cf.APIVersion == "" {
+		return errors.New("apiVersion is required. The value must be either \"v1\" or \"v2\"")
+	}
+
+	if cf.APIVersion != chart.APIVersionV1 && cf.APIVersion != chart.APIVersionV2 {
+		return fmt.Errorf("apiVersion '%s' is not valid. The value must be either \"v1\" or \"v2\"", cf.APIVersion)
+	}
+
+	return nil
+}
+
+func validateChartVersion(cf chart.Metadata) error {
+	if cf.Version == "" {
+		return errors.New("version is required")
+	}
+
+	version, err := semver.NewVersion(cf.Version)
+
+	if err != nil {
+		return errors.Errorf("version '%s' is not a valid SemVer", cf.Version)
+	}
+
+	c, err := semver.NewConstraint(">0.0.0-0")
+	if err != nil {
+		return err
+	}
+	valid, msg := c.Validate(version)
+
+	if !valid && len(msg) > 0 {
+		return errors.Errorf("version %v", msg[0])
+	}
+
+	return nil
+}
+
+func validateChartMaintainer(cf chart.Metadata) error {
+	for _, maintainer := range cf.Maintainers {
+		if maintainer.Name == "" {
+			return errors.New("each maintainer requires a name")
+		} else if maintainer.Email != "" && !govalidator.IsEmail(maintainer.Email) {
+			return errors.Errorf("invalid email '%s' for maintainer '%s'", maintainer.Email, maintainer.Name)
+		} else if maintainer.URL != "" && !govalidator.IsURL(maintainer.URL) {
+			return errors.Errorf("invalid url '%s' for maintainer '%s'", maintainer.URL, maintainer.Name)
+		}
+	}
+	return nil
+}
+
+func validateChartSources(cf chart.Metadata) error {
+	for _, source := range cf.Sources {
+		if source == "" || !govalidator.IsRequestURL(source) {
+			return errors.Errorf("invalid source URL '%s'", source)
+		}
+	}
+	return nil
+}
+
+func validateChartIconPresence(cf chart.Metadata) error {
+	if cf.Icon == "" {
+		return errors.New("icon is recommended")
+	}
+	return nil
+}
+
+func validateChartIconURL(cf chart.Metadata) error {
+	if cf.Icon != "" && !govalidator.IsRequestURL(cf.Icon) {
+		return errors.Errorf("invalid icon URL '%s'", cf.Icon)
+	}
+	return nil
+}
+
+func validateChartType(cf chart.Metadata) error {
+	if len(cf.Type) > 0 && cf.APIVersion != chart.APIVersionV2 {
+		return fmt.Errorf("chart type is not valid in apiVersion '%s'. It is valid in apiVersion '%s'", cf.APIVersion, chart.APIVersionV2)
+	}
+	return nil
+}
+
+func validateChartDependencies(cf chart.Metadata) error {
+	if len(cf.Dependencies) > 0 && cf.APIVersion != chart.APIVersionV2 {
+		return fmt.Errorf("dependencies are not valid in the Chart file with apiVersion '%s'. They are valid in apiVersion '%s'", cf.APIVersion, chart.APIVersionV2)
+	}
+	return nil
 }

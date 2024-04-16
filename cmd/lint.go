@@ -26,11 +26,10 @@ func lintExtensionCmd() *cobra.Command {
 				paths = args
 			}
 
-			if err := extension.WithHelm(o, paths); err != nil {
-				return err
-			}
+			// when helm lint is error. continue run builtins lint
+			_ = extension.WithHelm(o, paths)
 
-			if err := extension.WithBuiltins(paths); err != nil {
+			if err := extension.WithBuiltins(o, paths); err != nil {
 				return err
 			}
 
