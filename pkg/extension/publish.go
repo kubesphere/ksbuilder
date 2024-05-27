@@ -36,9 +36,10 @@ func LoadMetadata(path string) (*Metadata, error) {
 	if err = metadata.Validate(); err != nil {
 		return nil, err
 	}
-	if err = metadata.Init(path); err != nil {
+	if err = metadata.Init(); err != nil {
 		return nil, err
 	}
+	metadata.path = path
 	return metadata, nil
 }
 
@@ -132,7 +133,7 @@ func removeOutDir(path string) string {
 	return filepath.Join(elements[1:]...)
 }
 
-func writeFilesToTempDir(path, tempDir string) error {
+func WriteFilesToTempDir(path, tempDir string) error {
 	fileInfo, err := os.Stat(path)
 	if err != nil {
 		return err
@@ -170,7 +171,7 @@ func Load(path string) (*Extension, error) {
 	}
 	defer os.RemoveAll(tempDir) // nolint
 
-	if err = writeFilesToTempDir(path, tempDir); err != nil {
+	if err = WriteFilesToTempDir(path, tempDir); err != nil {
 		return nil, err
 	}
 
