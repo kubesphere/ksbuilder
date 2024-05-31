@@ -34,6 +34,8 @@ var Categories = []string{
 }
 
 type Metadata struct {
+	path string
+
 	APIVersion string `json:"apiVersion" validate:"required"`
 	// The name of the chart. Required.
 	Name                 string                                               `json:"name" validate:"required"`
@@ -49,6 +51,7 @@ type Metadata struct {
 	KSVersion            string                                               `json:"ksVersion,omitempty"`
 	Maintainers          []*chart.Maintainer                                  `json:"maintainers,omitempty"`
 	Provider             map[corev1alpha1.LanguageCode]*corev1alpha1.Provider `json:"provider" validate:"required"`
+	StaticFileDirectory  string                                               `json:"staticFileDirectory,omitempty"`
 	Icon                 string                                               `json:"icon" validate:"required"`
 	Screenshots          []string                                             `json:"screenshots,omitempty"`
 	Dependencies         []*chart.Dependency                                  `json:"dependencies,omitempty"`
@@ -91,18 +94,36 @@ func (md *Metadata) Validate() error {
 	return md.validateLanguageCode()
 }
 
-func (md *Metadata) Init(p string) error {
-	if err := md.LoadIcon(p); err != nil {
-		return err
-	}
-
+func (md *Metadata) Init() error {
 	if md.InstallationMode == "" {
 		md.InstallationMode = corev1alpha1.InstallationModeHostOnly
 	}
 	return nil
 }
 
-func (md *Metadata) loadIcon(p string) (string, error) {
+func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
+	icon, err := md.loadIcon()
+	if err != nil {
+		return nil, err
+	}
+
+	var c = chart.Metadata{
+		APIVersion:   chart.APIVersionV2,
+		Name:         md.Name,
+		Version:      md.Version,
+		Keywords:     md.Keywords,
+		Sources:      md.Sources,
+		KubeVersion:  md.KubeVersion,
+		Home:         md.Home,
+		Dependencies: md.Dependencies,
+		Description:  string(md.Description[corev1alpha1.DefaultLanguageCode]),
+		Icon:         icon,
+		Maintainers:  md.Maintainers,
+	}
+	return &c, nil
+}
+
+func (md *Metadata) loadIcon() (string, error) {
 	// If the icon is url or base64, you can use it directly.
 	// Otherwise, load the file encoding as base64
 	if strings.HasPrefix(md.Icon, "http://") ||
@@ -110,7 +131,7 @@ func (md *Metadata) loadIcon(p string) (string, error) {
 		strings.HasPrefix(md.Icon, "data:image") {
 		return md.Icon, nil
 	}
-	content, err := os.ReadFile(path.Join(p, md.Icon))
+	content, err := os.ReadFile(path.Join(md.path, md.Icon))
 	if err != nil {
 		return "", err
 	}
@@ -124,32 +145,6 @@ func (md *Metadata) loadIcon(p string) (string, error) {
 	base64Encoding += "data:" + mimeType + ";base64,"
 	base64Encoding += base64.StdEncoding.EncodeToString(content)
 	return base64Encoding, nil
-}
-
-func (md *Metadata) LoadIcon(p string) error {
-	icon, err := md.loadIcon(p)
-	if err != nil {
-		return err
-	}
-	md.Icon = icon
-	return nil
-}
-
-func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
-	var c = chart.Metadata{
-		APIVersion:   chart.APIVersionV2,
-		Name:         md.Name,
-		Version:      md.Version,
-		Keywords:     md.Keywords,
-		Sources:      md.Sources,
-		KubeVersion:  md.KubeVersion,
-		Home:         md.Home,
-		Dependencies: md.Dependencies,
-		Description:  string(md.Description[corev1alpha1.DefaultLanguageCode]),
-		Icon:         md.Icon,
-		Maintainers:  md.Maintainers,
-	}
-	return &c, nil
 }
 
 type Extension struct {
