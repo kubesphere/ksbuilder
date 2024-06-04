@@ -20,7 +20,7 @@ jobs:
         go version
         go env
     - name: Lint
-      uses: golangci/golangci-lint-action@v3
+      uses: golangci/golangci-lint-action@v6
       with:
         version: v1.54
         args: --timeout=10m

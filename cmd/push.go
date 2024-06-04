@@ -122,7 +122,7 @@ func (o *pushOptions) push(_ *cobra.Command, args []string) error {
 	if err = client.SubmitExtension(uploadExtensionResp.Snapshot.SnapshotID); err != nil {
 		return err
 	}
-	fmt.Println("Pushed to KubeSphere Cloud")
+	fmt.Println("Extension pushed and submitted to KubeSphere Cloud, waiting for review")
 	return nil
 }
 
