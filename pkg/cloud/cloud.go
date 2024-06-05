@@ -206,3 +206,31 @@ func (c *Client) SubmitExtension(snapshotID string) error {
 		nil,
 	)
 }
+
+func (c *Client) GetExtension(extensionName string) (*Extension, error) {
+	data := &Extension{}
+	if err := c.sendRequest(
+		http.MethodGet,
+		fmt.Sprintf("/apis/extension/v1/extensions/%s/summary", extensionName),
+		nil,
+		nil,
+		data,
+	); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
+func (c *Client) ListExtensionSnapshots(extensionName string) ([]Snapshot, error) {
+	data := make([]Snapshot, 0)
+	if err := c.sendRequest(
+		http.MethodGet,
+		fmt.Sprintf("/apis/extension/v1/extensions/%s/snapshots", extensionName),
+		nil,
+		nil,
+		&data,
+	); err != nil {
+		return nil, err
+	}
+	return data, nil
+}

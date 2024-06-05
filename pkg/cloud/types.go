@@ -1,5 +1,9 @@
 package cloud
 
+import (
+	"time"
+)
+
 type userInfo struct {
 	UserID string `json:"user_id"`
 }
@@ -22,4 +26,21 @@ type UploadExtensionResponse struct {
 	Snapshot struct {
 		SnapshotID string `json:"snapshot_id"`
 	} `json:"snapshot"`
+}
+
+type Snapshot struct {
+	SnapshotID string `json:"snapshot_id"`
+	Metadata   struct {
+		Version string `json:"version"`
+	} `json:"metadata"`
+	Status    string    `json:"status"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Extension struct {
+	ExtensionID   string `json:"extension_id"`
+	Status        string `json:"status"`
+	LatestVersion struct {
+		Version string `json:"version"`
+	} `json:"latest_version"`
 }
