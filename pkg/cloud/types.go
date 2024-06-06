@@ -39,8 +39,13 @@ type Snapshot struct {
 
 type Extension struct {
 	ExtensionID   string `json:"extension_id"`
+	Name          string `json:"name"`
 	Status        string `json:"status"`
 	LatestVersion struct {
 		Version string `json:"version"`
 	} `json:"latest_version"`
+}
+
+type ListExtensionsResponse struct {
+	Extensions []Extension `json:"extensions"`
 }

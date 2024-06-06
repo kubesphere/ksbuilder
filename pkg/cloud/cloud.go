@@ -207,6 +207,23 @@ func (c *Client) SubmitExtension(snapshotID string) error {
 	)
 }
 
+func (c *Client) ListExtensions() (*ListExtensionsResponse, error) {
+	body := &bytes.Buffer{}
+	body.WriteString(fmt.Sprintf(`{"developer_ids": ["%s"], "statuses": ["*"]}`, c.userID))
+
+	data := &ListExtensionsResponse{}
+	if err := c.sendRequest(
+		http.MethodPost,
+		"/apis/extension/v1/extensions/search",
+		body,
+		map[string]string{"Content-Type": "application/json"},
+		data,
+	); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
+
 func (c *Client) GetExtension(extensionName string) (*Extension, error) {
 	data := &Extension{}
 	if err := c.sendRequest(
