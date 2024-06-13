@@ -1,0 +1,22 @@
+---
+apiVersion: application.kubesphere.io/v2
+kind: ApplicationVersion
+metadata:
+  annotations:
+    application.kubesphere.io/app-maintainers: [[ .Maintainers ]]
+  finalizers:
+    - storeCleanFinalizer.application.kubesphere.io
+  labels:
+    application.kubesphere.io/app-id: [[ .AppName ]]
+    application.kubesphere.io/app-type: helm
+    application.kubesphere.io/repo-name: upload
+    kubesphere.io/workspace: system-workspace
+  name: [[ .AppVersionName ]]
+spec:
+  appType: helm
+  maintainer:
+    - name: [[ .Maintainers ]]
+  versionName: [[ .Version ]]
+status:
+  state: active
+  userName: admin

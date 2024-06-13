@@ -1,0 +1,20 @@
+---
+apiVersion: application.kubesphere.io/v2
+kind: Application
+metadata:
+  annotations:
+    application.kubesphere.io/app-maintainers: [[ .Maintainers ]]
+    application.kubesphere.io/app-originalName: [[ .Name ]]
+    application.kubesphere.io/latest-app-version: [[ .Version ]]
+  labels:
+    application.kubesphere.io/app-store: "true"
+    application.kubesphere.io/app-type: helm
+    application.kubesphere.io/repo-name: upload
+    kubesphere.io/workspace: system-workspace
+  name: [[ .AppName ]]
+spec:
+  appType: helm
+  appHome: [[ .AppHome ]]
+  abstraction: [[ .Abstraction ]]
+status:
+  state: active

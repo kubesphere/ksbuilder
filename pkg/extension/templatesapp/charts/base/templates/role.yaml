@@ -1,0 +1,35 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: [[ .Name ]]-cluster-role
+rules:
+  - verbs:
+      - '*'
+    apiGroups:
+      - 'application.kubesphere.io'
+    resources:
+      - '*'
+
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: [[ .Name ]]-cluster-role-binding
+  namespace: extension-[[ .Name ]]
+subjects:
+  - kind: ServiceAccount
+    name: [[ .Name ]]-sa
+    namespace: extension-[[ .Name ]]
+roleRef:
+  kind: ClusterRole
+  name: [[ .Name ]]-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: [[ .Name ]]-sa
+  namespace: extension-[[ .Name ]]
