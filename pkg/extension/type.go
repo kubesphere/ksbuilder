@@ -34,8 +34,6 @@ var Categories = []string{
 }
 
 type Metadata struct {
-	path string
-
 	APIVersion string `json:"apiVersion" validate:"required"`
 	// The name of the chart. Required.
 	Name                 string                                               `json:"name" validate:"required"`
@@ -59,6 +57,8 @@ type Metadata struct {
 	Namespace            string                                               `json:"namespace,omitempty"`
 	Images               []string                                             `json:"images,omitempty"`
 	ExternalDependencies []corev1alpha1.ExternalDependency                    `json:"externalDependencies,omitempty"`
+
+	base64EncodedIcon string
 }
 
 func validateLanguageCode(code corev1alpha1.LanguageCode) error {
@@ -94,19 +94,20 @@ func (md *Metadata) Validate() error {
 	return md.validateLanguageCode()
 }
 
-func (md *Metadata) Init() error {
+func (md *Metadata) Init(root string) error {
 	if md.InstallationMode == "" {
 		md.InstallationMode = corev1alpha1.InstallationModeHostOnly
 	}
+
+	icon, err := encodeIcon(root, md.Icon)
+	if err != nil {
+		return err
+	}
+	md.base64EncodedIcon = icon
 	return nil
 }
 
 func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
-	icon, err := md.loadIcon()
-	if err != nil {
-		return nil, err
-	}
-
 	var c = chart.Metadata{
 		APIVersion:   chart.APIVersionV2,
 		Name:         md.Name,
@@ -117,27 +118,27 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 		Home:         md.Home,
 		Dependencies: md.Dependencies,
 		Description:  string(md.Description[corev1alpha1.DefaultLanguageCode]),
-		Icon:         icon,
+		Icon:         md.base64EncodedIcon,
 		Maintainers:  md.Maintainers,
 	}
 	return &c, nil
 }
 
-func (md *Metadata) loadIcon() (string, error) {
+func encodeIcon(root, iconPath string) (string, error) {
 	// If the icon is url or base64, you can use it directly.
 	// Otherwise, load the file encoding as base64
-	if strings.HasPrefix(md.Icon, "http://") ||
-		strings.HasPrefix(md.Icon, "https://") ||
-		strings.HasPrefix(md.Icon, "data:image") {
-		return md.Icon, nil
+	if strings.HasPrefix(iconPath, "http://") ||
+		strings.HasPrefix(iconPath, "https://") ||
+		strings.HasPrefix(iconPath, "data:image") {
+		return iconPath, nil
 	}
-	content, err := os.ReadFile(path.Join(md.path, md.Icon))
+	content, err := os.ReadFile(path.Join(root, iconPath))
 	if err != nil {
 		return "", err
 	}
 	var base64Encoding string
 
-	mimeType := mime.TypeByExtension(path.Ext(md.Icon))
+	mimeType := mime.TypeByExtension(path.Ext(iconPath))
 	if mimeType == "" {
 		mimeType = http.DetectContentType(content)
 	}
@@ -191,7 +192,7 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 				ExtensionInfo: corev1alpha1.ExtensionInfo{
 					Description: ext.Metadata.Description,
 					DisplayName: ext.Metadata.DisplayName,
-					Icon:        ext.Metadata.Icon,
+					Icon:        ext.Metadata.base64EncodedIcon,
 					Provider:    ext.Metadata.Provider,
 					Created:     metav1.Now(),
 				},
@@ -217,7 +218,7 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 			ExtensionInfo: corev1alpha1.ExtensionInfo{
 				Description: ext.Metadata.Description,
 				DisplayName: ext.Metadata.DisplayName,
-				Icon:        ext.Metadata.Icon,
+				Icon:        ext.Metadata.base64EncodedIcon,
 				Provider:    ext.Metadata.Provider,
 				Created:     metav1.Now(),
 			},

@@ -36,10 +36,9 @@ func LoadMetadata(path string) (*Metadata, error) {
 	if err = metadata.Validate(); err != nil {
 		return nil, err
 	}
-	if err = metadata.Init(); err != nil {
+	if err = metadata.Init(path); err != nil {
 		return nil, err
 	}
-	metadata.path = path
 	return metadata, nil
 }
 
