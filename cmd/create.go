@@ -84,7 +84,7 @@ func (o *createOptions) run(_ *cobra.Command, _ []string) error {
 
 	pwd, _ := os.Getwd()
 	p := path.Join(pwd, name)
-	if err := extension.Create(p, extensionConfig); err != nil {
+	if err := extension.Create(p, extensionConfig, extension.Templates, "templates"); err != nil {
 		return err
 	}
 

@@ -1,0 +1,33 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "post-install-for-[[ .Name ]]"
+  annotations:
+    helm.sh/hook: post-install
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: [[ .Name ]]-sa
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: pre-upgrade-job
+          image: '{{ default "docker.io" .Values.global.imageRegistry }}/kubesphere/kubectl:v1.27.4'
+          command: ["/bin/bash"]
+          args:
+            - "-c"
+            - |
+              current_time=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+              patch_body1=$(printf '{"status": {"state": "active", "updateTime": "%s"}}' "$current_time")
+              patch_body2=$(printf '{"status": {"state": "active","userName": "admin", "updated": "%s"}}' "$current_time")
+              kubectl patch applications.application.kubesphere.io [[ .AppName ]] --subresource='status' --type='merge' -p "$patch_body1"
+              kubectl patch applicationversions.application.kubesphere.io [[ .AppVersionName ]] --subresource='status' --type='merge' -p "$patch_body2"
+              app_uid=$(kubectl get applications.application.kubesphere.io [[ .AppName ]] -o jsonpath='{.metadata.uid}')
+              patch_body_owner=$(printf '[{"op": "add", "path": "/metadata/ownerReferences", "value": [{"apiVersion": "application.kubesphere.io/v1alpha1", "kind": "Application", "name": "[[ .AppName ]]", "uid": "%s"}]}]' "$app_uid")
+              kubectl patch applicationversions.application.kubesphere.io [[ .AppVersionName ]] --type='json' -p "$patch_body_owner"
+

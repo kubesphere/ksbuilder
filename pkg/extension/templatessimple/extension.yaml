@@ -1,0 +1,50 @@
+apiVersion: kubesphere.io/v1alpha1
+name: [[ .Name ]]
+version: 0.1.0
+displayName:
+  zh: 示例扩展组件
+  en: Sample Extension
+description:
+  zh: 这是一个示例扩展组件，这是它的描述
+  en: This is a sample extension, and this is its description
+category: ai-machine-learning
+keywords:
+  - ai-machine-learning
+home: https://kubesphere.io
+sources:
+  - https://github.com/kubesphere
+kubeVersion: ">=1.19.0-0"
+ksVersion: ">=4.0.0-0"
+maintainers:
+  - name: "demoauthor"
+    email: ""
+    url: ""
+provider:
+  zh:
+    name: "demoauthor"
+    email: ""
+    url: ""
+  en:
+    name: "demoauthor"
+    email: ""
+    url: ""
+icon: ./static/favicon.svg
+screenshots:
+  - ./static/screenshots/screenshot.png
+
+# installationMode describes how to install subcharts, it can be HostOnly or Multicluster.
+# In Multicluster mode, the subchart with tag `extension` will only be deployed to the host cluster,
+# and the subchart with tag `agent` will be deployed to all selected clusters.
+installationMode: HostOnly
+# Custom namespace example: If not specified, it will be installed in the namespace named extension-{name}.
+#namespace: ""
+# external dependencies example
+#externalDependencies:
+#  - name: a
+#    type: extension
+#    version: ">= 2.6.0"
+#    required: true
+#  - name: b
+#    type: extension
+#    version: ">= 2.2.0"
+#    required: true

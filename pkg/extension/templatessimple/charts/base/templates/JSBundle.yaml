@@ -1,0 +1,13 @@
+apiVersion: extensions.kubesphere.io/v1alpha1
+kind: JSBundle
+metadata:
+  name: [[ .Name ]]-js
+spec:
+  rawFrom:
+    configMapKeyRef:
+      key: index.js
+      name: [[ .Name ]]-cm
+      namespace: extension-[[ .Name ]]
+status:
+  link: /dist/[[ .Name ]]/index.js
+  state: Available
