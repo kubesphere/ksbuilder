@@ -28,6 +28,7 @@ type Extension struct {
 	Screenshots        []string
 	Provider           map[corev1alpha1.LanguageCode]*corev1alpha1.Provider
 	SupportedLanguages []corev1alpha1.LanguageCode
+	Docs               string
 }
 
 func ParseExtension(name string, zipFile []byte) (*Extension, error) {
@@ -77,6 +78,7 @@ func ParseExtension(name string, zipFile []byte) (*Extension, error) {
 		Screenshots:        metadata.Screenshots,
 		Provider:           metadata.Provider,
 		SupportedLanguages: supportedLanguages,
+		Docs:               metadata.Docs,
 	}, nil
 }
 
