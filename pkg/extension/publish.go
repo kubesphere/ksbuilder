@@ -24,19 +24,42 @@ import (
 
 const MetadataFilename = "extension.yaml"
 
-func LoadMetadata(path string) (*Metadata, error) {
-	content, err := os.ReadFile(path + "/" + MetadataFilename)
+type Options struct {
+	encodeIcon bool
+}
+
+func WithEncodeIcon(encodeIcon bool) func(opts *Options) {
+	return func(opts *Options) {
+		opts.encodeIcon = encodeIcon
+	}
+}
+
+func LoadMetadata(path string, options ...func(*Options)) (*Metadata, error) {
+	opts := &Options{
+		encodeIcon: true,
+	}
+	for _, f := range options {
+		f(opts)
+	}
+
+	content, err := os.ReadFile(ospath.Join(path, MetadataFilename))
 	if err != nil {
 		return nil, err
 	}
-	metadata := new(Metadata)
-	if err = yaml.Unmarshal(content, metadata); err != nil {
+	metadata, err := ParseMetadata(content)
+	if err != nil {
 		return nil, err
 	}
+
+	if IsLocalFile(metadata.Icon) && opts.encodeIcon {
+		base64EncodedIcon, err := encodeIcon(ospath.Join(path, metadata.Icon))
+		if err != nil {
+			return nil, err
+		}
+		metadata.Icon = base64EncodedIcon
+	}
+
 	if err = metadata.Validate(); err != nil {
-		return nil, err
-	}
-	if err = metadata.Init(path); err != nil {
 		return nil, err
 	}
 	return metadata, nil

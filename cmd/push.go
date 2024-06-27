@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/spf13/cobra"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -48,12 +47,12 @@ func (o *pushOptions) push(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	metadata, err := extension.LoadMetadata(tempDir)
+	metadata, err := extension.LoadMetadata(tempDir, extension.WithEncodeIcon(false))
 	if err != nil {
 		return err
 	}
 	// upload images to cloud
-	if needUpload(metadata.Icon) {
+	if extension.IsLocalFile(metadata.Icon) {
 		resp, err := client.UploadFiles(metadata.Name, metadata.Version, tempDir, metadata.Icon)
 		if err != nil {
 			return err
@@ -63,7 +62,7 @@ func (o *pushOptions) push(_ *cobra.Command, args []string) error {
 	screenshots := make([]string, 0)
 	localScreenshots := make([]string, 0)
 	for _, p := range metadata.Screenshots {
-		if needUpload(p) {
+		if extension.IsLocalFile(p) {
 			localScreenshots = append(localScreenshots, p)
 		} else {
 			screenshots = append(screenshots, p)
@@ -124,13 +123,4 @@ func (o *pushOptions) push(_ *cobra.Command, args []string) error {
 	}
 	fmt.Println("Extension pushed and submitted to KubeSphere Cloud, waiting for review")
 	return nil
-}
-
-func needUpload(path string) bool {
-	if strings.HasPrefix(path, "http://") ||
-		strings.HasPrefix(path, "https://") ||
-		strings.HasPrefix(path, "data:image") {
-		return false
-	}
-	return true
 }
