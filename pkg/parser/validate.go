@@ -9,8 +9,6 @@ import (
 	"io"
 	"path"
 
-	"sigs.k8s.io/yaml"
-
 	"github.com/kubesphere/ksbuilder/pkg/extension"
 )
 
@@ -42,9 +40,9 @@ func ValidateExtension(name string, zipFile []byte) error {
 		if _, err = io.ReadFull(tr, buffer); err != nil && err != io.EOF {
 			return fmt.Errorf("read tar file failed: %s", err.Error())
 		}
-		metadata := new(extension.Metadata)
-		if err = yaml.Unmarshal(buffer, metadata); err != nil {
-			return fmt.Errorf("unmarshal the extension metadata failed: %s", err.Error())
+		metadata, err := extension.ParseMetadata(buffer)
+		if err != nil {
+			return fmt.Errorf("parse the extension metadata failed: %s", err.Error())
 		}
 		if err = metadata.Validate(); err != nil {
 			return fmt.Errorf("validate the extension metadata failed: %s", err.Error())

@@ -15,6 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1alpha1 "kubesphere.io/api/core/v1alpha1"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/pkg/iso639"
 )
@@ -57,8 +58,19 @@ type Metadata struct {
 	Namespace            string                                               `json:"namespace,omitempty"`
 	Images               []string                                             `json:"images,omitempty"`
 	ExternalDependencies []corev1alpha1.ExternalDependency                    `json:"externalDependencies,omitempty"`
+}
 
-	base64EncodedIcon string
+func ParseMetadata(data []byte) (*Metadata, error) {
+	metadata := new(Metadata)
+	if err := yaml.Unmarshal(data, metadata); err != nil {
+		return nil, err
+	}
+
+	// set default value for necessary fields
+	if metadata.InstallationMode == "" {
+		metadata.InstallationMode = corev1alpha1.InstallationModeHostOnly
+	}
+	return metadata, nil
 }
 
 func validateLanguageCode(code corev1alpha1.LanguageCode) error {
@@ -94,19 +106,6 @@ func (md *Metadata) Validate() error {
 	return md.validateLanguageCode()
 }
 
-func (md *Metadata) Init(root string) error {
-	if md.InstallationMode == "" {
-		md.InstallationMode = corev1alpha1.InstallationModeHostOnly
-	}
-
-	icon, err := encodeIcon(root, md.Icon)
-	if err != nil {
-		return err
-	}
-	md.base64EncodedIcon = icon
-	return nil
-}
-
 func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 	var c = chart.Metadata{
 		APIVersion:   chart.APIVersionV2,
@@ -118,21 +117,23 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 		Home:         md.Home,
 		Dependencies: md.Dependencies,
 		Description:  string(md.Description[corev1alpha1.DefaultLanguageCode]),
-		Icon:         md.base64EncodedIcon,
+		Icon:         md.Icon,
 		Maintainers:  md.Maintainers,
 	}
 	return &c, nil
 }
 
-func encodeIcon(root, iconPath string) (string, error) {
-	// If the icon is url or base64, you can use it directly.
-	// Otherwise, load the file encoding as base64
-	if strings.HasPrefix(iconPath, "http://") ||
-		strings.HasPrefix(iconPath, "https://") ||
-		strings.HasPrefix(iconPath, "data:image") {
-		return iconPath, nil
+func IsLocalFile(path string) bool {
+	if strings.HasPrefix(path, "http://") ||
+		strings.HasPrefix(path, "https://") ||
+		strings.HasPrefix(path, "data:image") {
+		return false
 	}
-	content, err := os.ReadFile(path.Join(root, iconPath))
+	return true
+}
+
+func encodeIcon(iconPath string) (string, error) {
+	content, err := os.ReadFile(iconPath)
 	if err != nil {
 		return "", err
 	}
@@ -192,7 +193,7 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 				ExtensionInfo: corev1alpha1.ExtensionInfo{
 					Description: ext.Metadata.Description,
 					DisplayName: ext.Metadata.DisplayName,
-					Icon:        ext.Metadata.base64EncodedIcon,
+					Icon:        ext.Metadata.Icon,
 					Provider:    ext.Metadata.Provider,
 					Created:     metav1.Now(),
 				},
@@ -218,7 +219,7 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 			ExtensionInfo: corev1alpha1.ExtensionInfo{
 				Description: ext.Metadata.Description,
 				DisplayName: ext.Metadata.DisplayName,
-				Icon:        ext.Metadata.base64EncodedIcon,
+				Icon:        ext.Metadata.Icon,
 				Provider:    ext.Metadata.Provider,
 				Created:     metav1.Now(),
 			},
