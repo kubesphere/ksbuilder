@@ -56,7 +56,7 @@ func (o *getOptions) get(_ *cobra.Command, args []string) error {
 			snapshot.SnapshotID,
 			snapshot.Metadata.Version,
 			snapshot.Status,
-			snapshot.UpdatedAt.Format("2006-01-02 15:04:05"),
+			snapshot.UpdatedAt.Local().Format("2006-01-02 15:04:05 MST"),
 		})
 	}
 
