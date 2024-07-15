@@ -9,5 +9,7 @@ extParent: topbar
 extTitle: demo
 # 扩展包描述
 extDesc: "this is a simple extension"
+# 挂载方式 iframe,link
+extEmbed: iframe
 # ingress controller 对外服务的Node端口
 ingressPort: 30888

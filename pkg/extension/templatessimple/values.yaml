@@ -1,14 +1,16 @@
+
+# 这里的配置是默认模板, 有些不需要用户填写的可以删除掉, 这里值会覆盖charts目录中value.yaml的值
 base:
   # 配置为ui的svc的名称与端口
   extSvcName: demo
   extSvcPort: 80
-  # 访问ks的域名, e.g. www.ks.com,192.168.50.208.nip.io
+  # 访问ks的域名, e.g. www.ks.com,192.168.50.208.nip.io, 如果使用域名需要保证能解析
   domain: www.ks.com
   # 挂载位置 e.g. topbar,global,toolbox,access,cluster,workspace,project,platformSettings
   extParent: topbar
   # ui的超链接名称
   extTitle: demo
-  # 扩展包描述
-  extDesc: "this is a simple extension"
+  # 打开方式 iframe 为嵌入,link 为新标签页打开
+  extEmbed: iframe
   # ingress controller 对外服务的Node端口
   ingressPort: 30888
