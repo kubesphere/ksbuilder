@@ -1,7 +1,9 @@
+{{ if eq .Values.extEmbed "iframe" }}
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: [[ .Name ]]-cm
+  name: [[ .Name ]]-cm-iframe
   namespace: extension-[[ .Name ]]
 data:
   index.js: |-
@@ -368,3 +370,5 @@ data:
             }
         }
     }));
+
+{{ end }}

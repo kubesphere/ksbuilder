@@ -6,7 +6,7 @@ spec:
   rawFrom:
     configMapKeyRef:
       key: index.js
-      name: [[ .Name ]]-cm
+      name: [[ .Name ]]-cm-{{ .Values.extEmbed }}
       namespace: extension-[[ .Name ]]
 status:
   link: /dist/[[ .Name ]]/index.js

@@ -9,27 +9,6 @@ helm upgrade --install ingress-nginx ingress-nginx \
   --set controller.service.type=NodePort \
   --set controller.service.nodePorts.http=30888
 ```
-## 创建一个扩展
-
-使用一个已制作好的chart包,或者生成一个示例的
-
-```bash
-helm create demo
-helm package demo
-Successfully packaged chart and saved it to: /Users/inksnw/Desktop/demo-0.1.0.tgz
-```
-
-创建扩展
-
-```bash
-# --from 添加上文中的chart包
-ksbuilder createsimple --from=./demo-0.1.0.tgz 
-```
-
-## 验证
-
-> demo为chart包的名字,即chart.yaml中的name字段
-
 ### 域名方式
 
 安装后, 您可以访问以下示例地址验证
