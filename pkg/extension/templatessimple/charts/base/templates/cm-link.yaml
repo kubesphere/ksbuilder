@@ -131,7 +131,12 @@ data:
                         };
                         return e[t](n, n.exports, c), n.exports
                     }
-                    c.y = t, c.g = function () {
+                    c.y = t, c.d = function (e, t) {
+                        for (var r in t) c.o(t, r) && !c.o(e, r) && Object.defineProperty(e, r, {
+                            enumerable: !0,
+                            get: t[r]
+                        })
+                    }, c.g = function () {
                         if ("object" == typeof globalThis) return globalThis;
                         try {
                             return this || new Function("return this")()
@@ -140,6 +145,13 @@ data:
                         }
                     }(), c.o = function (e, t) {
                         return Object.prototype.hasOwnProperty.call(e, t)
+                    }, c.r = function (e) {
+                        "undefined" != typeof Symbol && Symbol.toStringTag && Object.defineProperty(
+                            e, Symbol.toStringTag, {
+                                value: "Module"
+                            }), Object.defineProperty(e, "__esModule", {
+                            value: !0
+                        })
                     },
                         function () {
                             var e;
@@ -156,9 +168,15 @@ data:
                             e = e.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/"),
                                 c.p = e
                         }();
+                    var u = {};
                     return (0, c(725).w)(1),
                         function () {
                             "use strict";
+                            c.r(u), c.d(u, {
+                                default: function () {
+                                    return P
+                                }
+                            });
                             var e = c(726),
                                 t = c(965),
                                 r = c(761);
@@ -189,7 +207,7 @@ data:
                                 }, i(e)
                             }
 
-                            function u(e) {
+                            function a(e) {
                                 var t = function (e, t) {
                                     if ("object" != i(e) || !e) return e;
                                     var r = e[Symbol.toPrimitive];
@@ -205,7 +223,7 @@ data:
                             }
 
                             function s(e, t, r) {
-                                return (t = u(t)) in e ? Object.defineProperty(e, t, {
+                                return (t = a(t)) in e ? Object.defineProperty(e, t, {
                                     value: r,
                                     enumerable: !0,
                                     configurable: !0,
@@ -213,7 +231,7 @@ data:
                                 }) : e[t] = r, e
                             }
 
-                            function a(e, t) {
+                            function f(e, t) {
                                 var r = Object.keys(e);
                                 if (Object.getOwnPropertySymbols) {
                                     var n = Object.getOwnPropertySymbols(e);
@@ -225,13 +243,13 @@ data:
                                 return r
                             }
 
-                            function f(e) {
+                            function p(e) {
                                 for (var t = 1; t < arguments.length; t++) {
                                     var r = null != arguments[t] ? arguments[t] : {};
-                                    t % 2 ? a(Object(r), !0).forEach((function (t) {
+                                    t % 2 ? f(Object(r), !0).forEach((function (t) {
                                         s(e, t, r[t])
                                     })) : Object.getOwnPropertyDescriptors ? Object.defineProperties(
-                                        e, Object.getOwnPropertyDescriptors(r)) : a(Object(r)).forEach(
+                                        e, Object.getOwnPropertyDescriptors(r)) : f(Object(r)).forEach(
                                         (function (t) {
                                             Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(
                                                 r, t))
@@ -239,11 +257,11 @@ data:
                                 }
                                 return e
                             }
-                            for (var p = c(998), l = p.keys().filter((function (e) {
+                            for (var l = c(998), y = l.keys().filter((function (e) {
                                 return "./index.ts" !== e
-                            })), b = {}, y = 0; y < l.length; y += 1) l[y].startsWith(".") && (
-                                b = f(f({}, b), p(l[y])));
-                            var m = b;
+                            })), b = {}, m = 0; m < y.length; m += 1) y[m].startsWith(".") && (
+                                b = p(p({}, b), l(y[m])));
+                            var d = b;
 
                             function v(e, t) {
                                 var r = Object.keys(e);
@@ -257,7 +275,7 @@ data:
                                 return r
                             }
 
-                            function d(e) {
+                            function g(e) {
                                 for (var t = 1; t < arguments.length; t++) {
                                     var r = null != arguments[t] ? arguments[t] : {};
                                     t % 2 ? v(Object(r), !0).forEach((function (t) {
@@ -271,11 +289,11 @@ data:
                                 }
                                 return e
                             }
-                            for (var g = c(781), h = g.keys().filter((function (e) {
+                            for (var O = c(781), h = O.keys().filter((function (e) {
                                 return "./index.ts" !== e
-                            })), O = {}, w = 0; w < h.length; w += 1) h[w].startsWith(".") && (
-                                O = d(d({}, O), g(h[w])));
-                            var j = {
+                            })), w = {}, j = 0; j < h.length; j += 1) h[j].startsWith(".") && (
+                                w = g(g({}, w), O(h[j])));
+                            var P = {
                                 routes: o,
                                 menus: [{
                                     parent: "{{ .Values.extParent }}",
@@ -287,15 +305,14 @@ data:
                                     skipAuth: !0
                                 }],
                                 locales: {
-                                    zh: m,
-                                    en: O
+                                    zh: d,
+                                    en: w
                                 }
-                            };
-                            globals.context.registerExtension(j)
-                        }(), {}
+                            }
+                        }(), u
                 }())
             }
         }
-        }));
+    }));
 
 {{ end }}
