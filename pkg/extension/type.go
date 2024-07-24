@@ -58,6 +58,7 @@ type Metadata struct {
 	Namespace            string                                               `json:"namespace,omitempty"`
 	Images               []string                                             `json:"images,omitempty"`
 	ExternalDependencies []corev1alpha1.ExternalDependency                    `json:"externalDependencies,omitempty"`
+	Annotations          map[string]string                                    `json:"annotations,omitempty"`
 }
 
 func ParseMetadata(data []byte) (*Metadata, error) {
@@ -119,6 +120,7 @@ func (md *Metadata) ToChartYaml() (*chart.Metadata, error) {
 		Description:  string(md.Description[corev1alpha1.DefaultLanguageCode]),
 		Icon:         md.Icon,
 		Maintainers:  md.Maintainers,
+		Annotations:  md.Annotations,
 	}
 	return &c, nil
 }
@@ -213,6 +215,7 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 				corev1alpha1.ExtensionReferenceLabel: ext.Metadata.Name,
 				corev1alpha1.CategoryLabel:           ext.Metadata.Category,
 			},
+			Annotations: ext.Metadata.Annotations,
 		},
 		Spec: corev1alpha1.ExtensionVersionSpec{
 			InstallationMode: ext.Metadata.InstallationMode,
