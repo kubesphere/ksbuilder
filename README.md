@@ -151,7 +151,7 @@ Login Succeeded
 
 ### Push and submit the extension
 
-Use the `ksbuilder push` subcommand to submit the plugin to KubeSphere Cloud. The `push` subcommand is similar to `publish` and the target can be either a directory or a packaged `.tgz` file:
+Use the `ksbuilder push` subcommand to submit the extension to KubeSphere Cloud. The `push` subcommand is similar to `publish` and the target can be either a directory or a packaged `.tgz` file:
 
 ```
 $ ksbuilder push tower
@@ -183,6 +183,28 @@ Status:   draft
 
 SNAPSHOT ID          VERSION   STATUS      UPDATE TIME
 515518094316217510   1.0.0     submitted   2024-05-27 09:37:05
+```
+
+### Unpush a snapshot
+
+Use the `ksbuilder unpush` subcommand to cancel the submission of a snapshot in KubeSphere Cloud.
+
+When we submit an extension, its snapshot status is marked as `submitted`. If we want to make some new changes to the extension at this point, we can use this command to undo the submission. After undoing, the status of the extension will revert to `draft`, allowing it to be pushed again.
+
+To undo the submission, we first need to use the `get` subcommand to obtain the corresponding snapshot ID:
+
+```
+$ ksbuilder get tower
+Name:     tower
+ID:       515518094316151974
+Status:   draft
+
+SNAPSHOT ID          VERSION   STATUS      UPDATE TIME
+515518094316217510   1.0.0     submitted   2024-05-27 17:37:05 CST
+
+$ ksbuilder unpush 515518094316217510
+unpush snapshot 515518094316217510
+Snapshot 515518094316217510 has been unsubmitted and reverted to draft state
 ```
 
 Please refer to [KubeSphere extension development guide](https://dev-guide.kubesphere.io/extension-dev-guide/en/packaging-and-release/) for more details on extension packaging and releasing.

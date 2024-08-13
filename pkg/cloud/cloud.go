@@ -207,6 +207,19 @@ func (c *Client) SubmitExtension(snapshotID string) error {
 	)
 }
 
+func (c *Client) CancelSubmitExtension(snapshotID string) error {
+	body := &bytes.Buffer{}
+	body.WriteString(`{"message": "cancel submit"}`)
+
+	return c.sendRequest(
+		http.MethodPost,
+		fmt.Sprintf("/apis/extension/v1/users/%s/snapshots/%s/action:cancel-submit", c.userID, snapshotID),
+		body,
+		map[string]string{"Content-Type": "application/json"},
+		nil,
+	)
+}
+
 func (c *Client) ListExtensions() (*ListExtensionsResponse, error) {
 	body := &bytes.Buffer{}
 	body.WriteString(fmt.Sprintf(`{"developer_ids": ["%s"], "statuses": ["*"]}`, c.userID))
