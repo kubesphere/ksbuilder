@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"github.com/mholt/archiver/v3"
-	"helm.sh/helm/v3/pkg/chart/loader"
 	"io"
 	"io/fs"
 	"math/rand"
@@ -16,9 +14,13 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/mholt/archiver/v3"
+	"helm.sh/helm/v3/pkg/chart/loader"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/yaml"
+
+	"github.com/kubesphere/ksbuilder/pkg/api"
 )
 
 type Config struct {
@@ -192,10 +194,10 @@ func CreateAppChart(p string, name string, chart []byte) error {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cmName,
-			Namespace: kubeSphereSystem,
+			Namespace: api.KubeSphereSystem,
 		},
 		BinaryData: map[string][]byte{
-			configMapDataKey: chart,
+			api.ConfigMapDataKey: chart,
 		},
 	}
 	cmByte, err := yaml.Marshal(cm)

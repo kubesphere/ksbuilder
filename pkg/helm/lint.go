@@ -29,26 +29,27 @@ import (
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"k8s.io/apiserver/pkg/endpoints/deprecation"
 	kscheme "k8s.io/client-go/kubernetes/scheme"
+
+	"github.com/kubesphere/ksbuilder/pkg/api"
 )
 
 // Lint executes 'helm Lint' against the given chart.
-func Lint(l *action.Lint, paths []string, vals map[string]interface{}, metadata *chart.Metadata) *action.LintResult {
+func Lint(l *action.Lint, path string, vals map[string]interface{}, metadata *chart.Metadata) *action.LintResult {
 	lowestTolerance := support.ErrorSev
 	if l.Strict {
 		lowestTolerance = support.WarningSev
 	}
 	result := &action.LintResult{}
-	for _, path := range paths {
-		linter := lintAll(path, vals, l.Namespace, l.Strict, metadata)
+	linter := lintAll(path, vals, l.Namespace, l.Strict, metadata)
 
-		result.Messages = append(result.Messages, linter.Messages...)
-		result.TotalChartsLinted++
-		for _, msg := range linter.Messages {
-			if msg.Severity >= lowestTolerance {
-				result.Errors = append(result.Errors, msg.Err)
-			}
+	result.Messages = append(result.Messages, linter.Messages...)
+	result.TotalChartsLinted++
+	for _, msg := range linter.Messages {
+		if msg.Severity >= lowestTolerance {
+			result.Errors = append(result.Errors, msg.Err)
 		}
 	}
+
 	return result
 }
 
@@ -59,14 +60,14 @@ func lintAll(basedir string, values map[string]interface{}, namespace string, st
 
 	linter := support.Linter{ChartDir: chartDir}
 	// For ks-extension it's not exist.
-	lintChartfile(&linter, chartDir, *metadata)
+	lintChartfile(&linter, chartDir, api.DeepCopy(metadata))
 	rules.ValuesWithOverrides(&linter, values)
-	lintTemplates(&linter, values, namespace, strict, *metadata)
-	lintDependencies(&linter, *metadata)
+	lintTemplates(&linter, values, namespace, strict, api.DeepCopy(metadata))
+	lintDependencies(&linter, api.DeepCopy(metadata))
 	return linter
 }
 
-func lintChartfile(linter *support.Linter, chartFilePath string, chartFile chart.Metadata) {
+func lintChartfile(linter *support.Linter, chartFilePath string, chartFile *chart.Metadata) {
 	var chartFileName = "Chart.yaml"
 	if _, err := os.Stat(chartFilePath + "/" + "Chart.yaml"); os.IsNotExist(err) {
 		chartFileName = "extension.yaml"
@@ -85,7 +86,7 @@ func lintChartfile(linter *support.Linter, chartFilePath string, chartFile chart
 	linter.RunLinterRule(support.ErrorSev, chartFileName, validateChartDependencies(chartFile))
 }
 
-func lintTemplates(linter *support.Linter, values map[string]interface{}, namespace string, strict bool, metadata chart.Metadata) {
+func lintTemplates(linter *support.Linter, values map[string]interface{}, namespace string, strict bool, metadata *chart.Metadata) {
 	fpath := "templates/"
 	templatesPath := filepath.Join(linter.ChartDir, fpath)
 
@@ -98,7 +99,7 @@ func lintTemplates(linter *support.Linter, values map[string]interface{}, namesp
 
 	// Load chart and parse templates
 	//chart, err := LoadHelmCharts(linter.ChartDir)
-	chart, err := Load(linter.ChartDir, &metadata)
+	chart, err := Load(linter.ChartDir, metadata)
 
 	chartLoaded := linter.RunLinterRule(support.ErrorSev, fpath, err)
 
@@ -204,8 +205,8 @@ func lintTemplates(linter *support.Linter, values map[string]interface{}, namesp
 // Dependencies runs lints against a chart's dependencies
 //
 // See https://github.com/helm/helm/issues/7910
-func lintDependencies(linter *support.Linter, metadata chart.Metadata) {
-	c, err := Load(linter.ChartDir, &metadata)
+func lintDependencies(linter *support.Linter, metadata *chart.Metadata) {
+	c, err := Load(linter.ChartDir, metadata)
 	if !linter.RunLinterRule(support.ErrorSev, "", validateChartFormat(err)) {
 		return
 	}
@@ -512,14 +513,14 @@ type k8sYamlMetadata struct {
 }
 
 // Validate chartfile
-func validateChartName(cf chart.Metadata) error {
+func validateChartName(cf *chart.Metadata) error {
 	if cf.Name == "" {
 		return errors.New("name is required")
 	}
 	return nil
 }
 
-func validateChartAPIVersion(cf chart.Metadata) error {
+func validateChartAPIVersion(cf *chart.Metadata) error {
 	if cf.APIVersion == "" {
 		return errors.New("apiVersion is required. The value must be either \"v1\" or \"v2\"")
 	}
@@ -531,7 +532,7 @@ func validateChartAPIVersion(cf chart.Metadata) error {
 	return nil
 }
 
-func validateChartVersion(cf chart.Metadata) error {
+func validateChartVersion(cf *chart.Metadata) error {
 	if cf.Version == "" {
 		return errors.New("version is required")
 	}
@@ -555,7 +556,7 @@ func validateChartVersion(cf chart.Metadata) error {
 	return nil
 }
 
-func validateChartMaintainer(cf chart.Metadata) error {
+func validateChartMaintainer(cf *chart.Metadata) error {
 	for _, maintainer := range cf.Maintainers {
 		if maintainer.Name == "" {
 			return errors.New("each maintainer requires a name")
@@ -568,7 +569,7 @@ func validateChartMaintainer(cf chart.Metadata) error {
 	return nil
 }
 
-func validateChartSources(cf chart.Metadata) error {
+func validateChartSources(cf *chart.Metadata) error {
 	for _, source := range cf.Sources {
 		if source == "" || !govalidator.IsRequestURL(source) {
 			return errors.Errorf("invalid source URL '%s'", source)
@@ -577,28 +578,28 @@ func validateChartSources(cf chart.Metadata) error {
 	return nil
 }
 
-func validateChartIconPresence(cf chart.Metadata) error {
+func validateChartIconPresence(cf *chart.Metadata) error {
 	if cf.Icon == "" {
 		return errors.New("icon is recommended")
 	}
 	return nil
 }
 
-func validateChartIconURL(cf chart.Metadata) error {
+func validateChartIconURL(cf *chart.Metadata) error {
 	if cf.Icon != "" && !govalidator.IsRequestURL(cf.Icon) {
 		return errors.Errorf("invalid icon URL '%s'", cf.Icon)
 	}
 	return nil
 }
 
-func validateChartType(cf chart.Metadata) error {
+func validateChartType(cf *chart.Metadata) error {
 	if len(cf.Type) > 0 && cf.APIVersion != chart.APIVersionV2 {
 		return fmt.Errorf("chart type is not valid in apiVersion '%s'. It is valid in apiVersion '%s'", cf.APIVersion, chart.APIVersionV2)
 	}
 	return nil
 }
 
-func validateChartDependencies(cf chart.Metadata) error {
+func validateChartDependencies(cf *chart.Metadata) error {
 	if len(cf.Dependencies) > 0 && cf.APIVersion != chart.APIVersionV2 {
 		return fmt.Errorf("dependencies are not valid in the Chart file with apiVersion '%s'. They are valid in apiVersion '%s'", cf.APIVersion, chart.APIVersionV2)
 	}

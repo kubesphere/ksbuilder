@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/cmd/options"
+	"github.com/kubesphere/ksbuilder/pkg/api"
 	"github.com/kubesphere/ksbuilder/pkg/helm"
 )
 
@@ -81,14 +82,12 @@ func WithHelm(o *options.LintOptions, paths []string) error {
 	for _, path := range paths {
 		var chartmd *chart.Metadata
 		if _, err := os.Stat(path + "/" + "Chart.yaml"); os.IsNotExist(err) {
-			metadata, err := LoadMetadata(path)
+			metadata, err := api.LoadMetadata(path)
 			if err != nil {
 				return err
 			}
-			chartmd, err = metadata.ToChartYaml()
-			if err != nil {
-				return err
-			}
+			chartmd = metadata.ToChartYaml()
+
 		} else {
 			chartmd, err = chartutil.LoadChartfile(path + "/" + "Chart.yaml")
 			if err != nil {
@@ -96,7 +95,7 @@ func WithHelm(o *options.LintOptions, paths []string) error {
 			}
 		}
 
-		result := helm.Lint(o.Client, []string{path}, vals, chartmd)
+		result := helm.Lint(o.Client, path, vals, chartmd)
 
 		// If there is no errors/warnings and quiet flag is set
 		// go to the next chart
@@ -154,11 +153,7 @@ func WithBuiltins(o *options.LintOptions, paths []string) error {
 	if err != nil {
 		return err
 	}
-	chartYaml, err := ext.Metadata.ToChartYaml()
-	if err != nil {
-		return err
-	}
-	chartRequested, err := helm.Load(paths[0], chartYaml)
+	chartRequested, err := helm.Load(paths[0], ext.Metadata.ToChartYaml())
 	if err != nil {
 		return err
 	}

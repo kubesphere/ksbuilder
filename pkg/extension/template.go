@@ -15,6 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/releaseutil"
 
 	"github.com/kubesphere/ksbuilder/cmd/options"
+	"github.com/kubesphere/ksbuilder/pkg/api"
 	"github.com/kubesphere/ksbuilder/pkg/helm"
 )
 
@@ -30,16 +31,12 @@ func PrintTemplate(args []string, o *options.TemplateOptions, out io.Writer) err
 	}
 
 	// set metadata
-	metadata, err := LoadMetadata(cp)
-	if err != nil {
-		return err
-	}
-	chartYaml, err := metadata.ToChartYaml()
+	metadata, err := api.LoadMetadata(cp)
 	if err != nil {
 		return err
 	}
 
-	rel, err := helm.Template(args, o, cp, chartYaml, out)
+	rel, err := helm.Template(args, o, cp, metadata.ToChartYaml(), out)
 	if err != nil && !o.Settings.Debug {
 		if rel != nil {
 			return fmt.Errorf("%w\n\nUse --debug flag to render out invalid YAML", err)

@@ -11,7 +11,7 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"sigs.k8s.io/yaml"
 
-	"github.com/kubesphere/ksbuilder/pkg/extension"
+	"github.com/kubesphere/ksbuilder/pkg/api"
 )
 
 type packageOptions struct {
@@ -48,15 +48,12 @@ func (o *packageOptions) packageCmd(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	metadata, err := extension.LoadMetadata(p)
+	metadata, err := api.LoadMetadata(p)
 	if err != nil {
 		return err
 	}
-	chartYaml, err := metadata.ToChartYaml()
-	if err != nil {
-		return err
-	}
-	chartMetadata, err := yaml.Marshal(chartYaml)
+
+	chartMetadata, err := yaml.Marshal(metadata.ToChartYaml())
 	if err != nil {
 		return err
 	}

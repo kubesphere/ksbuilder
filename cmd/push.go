@@ -10,6 +10,7 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"sigs.k8s.io/yaml"
 
+	"github.com/kubesphere/ksbuilder/pkg/api"
 	"github.com/kubesphere/ksbuilder/pkg/cloud"
 	"github.com/kubesphere/ksbuilder/pkg/extension"
 )
@@ -47,12 +48,12 @@ func (o *pushOptions) push(_ *cobra.Command, args []string) error {
 		return err
 	}
 
-	metadata, err := extension.LoadMetadata(tempDir, extension.WithEncodeIcon(false))
+	metadata, err := api.LoadMetadata(tempDir, api.WithEncodeIcon(false))
 	if err != nil {
 		return err
 	}
 	// upload images to cloud
-	if extension.IsLocalFile(metadata.Icon) {
+	if api.IsLocalFile(metadata.Icon) {
 		resp, err := client.UploadFiles(metadata.Name, metadata.Version, tempDir, metadata.Icon)
 		if err != nil {
 			return err
@@ -62,7 +63,7 @@ func (o *pushOptions) push(_ *cobra.Command, args []string) error {
 	screenshots := make([]string, 0)
 	localScreenshots := make([]string, 0)
 	for _, p := range metadata.Screenshots {
-		if extension.IsLocalFile(p) {
+		if api.IsLocalFile(p) {
 			localScreenshots = append(localScreenshots, p)
 		} else {
 			screenshots = append(screenshots, p)
@@ -89,15 +90,11 @@ func (o *pushOptions) push(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	if err = os.WriteFile(tempDir+"/"+extension.MetadataFilename, data, 0644); err != nil {
+	if err = os.WriteFile(tempDir+"/"+api.MetadataFilename, data, 0644); err != nil {
 		return err
 	}
 
-	chartYaml, err := metadata.ToChartYaml()
-	if err != nil {
-		return err
-	}
-	chartMetadata, err := yaml.Marshal(chartYaml)
+	chartMetadata, err := yaml.Marshal(metadata.ToChartYaml())
 	if err != nil {
 		return err
 	}

@@ -17,53 +17,12 @@ import (
 	"helm.sh/helm/v3/pkg/chartutil"
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/registry"
+	corev1alpha1 "kubesphere.io/api/core/v1alpha1"
 	"sigs.k8s.io/yaml"
 
+	"github.com/kubesphere/ksbuilder/pkg/api"
 	"github.com/kubesphere/ksbuilder/pkg/utils"
 )
-
-const MetadataFilename = "extension.yaml"
-
-type Options struct {
-	encodeIcon bool
-}
-
-func WithEncodeIcon(encodeIcon bool) func(opts *Options) {
-	return func(opts *Options) {
-		opts.encodeIcon = encodeIcon
-	}
-}
-
-func LoadMetadata(path string, options ...func(*Options)) (*Metadata, error) {
-	opts := &Options{
-		encodeIcon: true,
-	}
-	for _, f := range options {
-		f(opts)
-	}
-
-	content, err := os.ReadFile(ospath.Join(path, MetadataFilename))
-	if err != nil {
-		return nil, err
-	}
-	metadata, err := ParseMetadata(content)
-	if err != nil {
-		return nil, err
-	}
-
-	if IsLocalFile(metadata.Icon) && opts.encodeIcon {
-		base64EncodedIcon, err := encodeIcon(ospath.Join(path, metadata.Icon))
-		if err != nil {
-			return nil, err
-		}
-		metadata.Icon = base64EncodedIcon
-	}
-
-	if err = metadata.Validate(); err != nil {
-		return nil, err
-	}
-	return metadata, nil
-}
 
 var applicationClassTmpl = template.Must(template.New("ApplicationClass").Funcs(sprig.FuncMap()).Parse(`
 apiVersion: applicationclass.kubesphere.io/v1alpha1
@@ -81,6 +40,18 @@ spec:
   description: {{.Description | toJson}}
   maintainer: {{.Maintainer | toJson}}
 `))
+
+type ApplicationClass struct {
+	ApplicationClassGroup string               `json:"applicationClassGroup,omitempty"`
+	Name                  string               `json:"name,omitempty"`
+	Provisioner           string               `json:"provisioner,omitempty"`
+	Parameters            map[string]string    `json:"parameters,omitempty"`
+	AppVersion            string               `json:"appVersion,omitempty"`
+	PackageVersion        string               `json:"packageVersion,omitempty"`
+	Icon                  string               `json:"icon,omitempty"`
+	Description           corev1alpha1.Locales `json:"description,omitempty"`
+	Maintainer            *chart.Maintainer    `json:"maintainer,omitempty"`
+}
 
 func LoadApplicationClass(name, tempDir string) error {
 	var b bytes.Buffer
@@ -186,7 +157,7 @@ func WriteFilesToTempDir(path, tempDir string) error {
 	return nil
 }
 
-func Load(path string) (*Extension, error) {
+func Load(path string) (*api.Extension, error) {
 	tempDir, err := os.MkdirTemp("", "chart")
 	if err != nil {
 		return nil, err
@@ -197,19 +168,14 @@ func Load(path string) (*Extension, error) {
 		return nil, err
 	}
 
-	metadata, err := LoadMetadata(tempDir)
+	metadata, err := api.LoadMetadata(tempDir)
 	if err != nil {
 		return nil, err
 	}
-	var extension Extension
+	var extension api.Extension
 	extension.Metadata = metadata
 
-	chartYaml, err := metadata.ToChartYaml()
-	if err != nil {
-		return nil, err
-	}
-
-	chartMetadata, err := yaml.Marshal(chartYaml)
+	chartMetadata, err := yaml.Marshal(metadata.ToChartYaml())
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +205,7 @@ func Load(path string) (*Extension, error) {
 	return &extension, nil
 }
 
-func LoadFromHelm(path string) (*Extension, error) {
+func LoadFromHelm(path string) (*api.Extension, error) {
 	tempDir, err := os.MkdirTemp("", "chart")
 	if err != nil {
 		return nil, err
@@ -282,8 +248,8 @@ func LoadFromHelm(path string) (*Extension, error) {
 		return nil, err
 	}
 
-	var extension Extension
-	metadata, err := LoadMetadata(filepath.Join(tempDir, filepath.Base(path)))
+	var extension api.Extension
+	metadata, err := api.LoadMetadata(filepath.Join(tempDir, filepath.Base(path)))
 	if err != nil {
 		return nil, err
 	}
