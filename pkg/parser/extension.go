@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	corev1alpha1 "kubesphere.io/api/core/v1alpha1"
 
-	"github.com/kubesphere/ksbuilder/pkg/extension"
+	"github.com/kubesphere/ksbuilder/pkg/api"
 	"github.com/kubesphere/ksbuilder/pkg/utils"
 )
 
@@ -32,11 +32,7 @@ func ParseExtension(name string, zipFile []byte) (*Extension, error) {
 		return nil, err
 	}
 
-	metadata, err := extension.ParseMetadata(data[path.Join(name, extension.MetadataFilename)])
-	if err != nil {
-		return nil, err
-	}
-	chartMetadata, err := metadata.ToChartYaml()
+	metadata, err := api.ParseMetadata(data[path.Join(name, api.MetadataFilename)])
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +59,7 @@ func ParseExtension(name string, zipFile []byte) (*Extension, error) {
 	}
 
 	return &Extension{
-		ChartMetadata:      chartMetadata,
+		ChartMetadata:      metadata.ToChartYaml(),
 		DisplayName:        metadata.DisplayName,
 		Description:        metadata.Description,
 		KSVersion:          metadata.KSVersion,

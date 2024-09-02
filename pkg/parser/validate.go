@@ -9,7 +9,7 @@ import (
 	"io"
 	"path"
 
-	"github.com/kubesphere/ksbuilder/pkg/extension"
+	"github.com/kubesphere/ksbuilder/pkg/api"
 )
 
 func ValidateExtension(name string, zipFile []byte) error {
@@ -19,7 +19,7 @@ func ValidateExtension(name string, zipFile []byte) error {
 	}
 	defer gr.Close() // nolint
 
-	metadataFilename := path.Join(name, extension.MetadataFilename)
+	metadataFilename := path.Join(name, api.MetadataFilename)
 	tr := tar.NewReader(gr)
 	for {
 		h, err := tr.Next()
@@ -40,7 +40,7 @@ func ValidateExtension(name string, zipFile []byte) error {
 		if _, err = io.ReadFull(tr, buffer); err != nil && err != io.EOF {
 			return fmt.Errorf("read tar file failed: %s", err.Error())
 		}
-		metadata, err := extension.ParseMetadata(buffer)
+		metadata, err := api.ParseMetadata(buffer)
 		if err != nil {
 			return fmt.Errorf("parse the extension metadata failed: %s", err.Error())
 		}

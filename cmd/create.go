@@ -29,6 +29,20 @@ type createOptions struct {
 	from string
 }
 
+var Categories = []string{
+	"ai-machine-learning",
+	"computing",
+	"database",
+	"dev-tools",
+	"integration-delivery",
+	"observability",
+	"networking",
+	"security",
+	"storage",
+	"streaming-messaging",
+	"other",
+}
+
 func createExtensionCmd() *cobra.Command {
 	o := &createOptions{}
 
@@ -52,7 +66,7 @@ func (o *createOptions) run(_ *cobra.Command, _ []string) error {
 
 	categoryPromptContent := selectPromptContent{
 		text:  fmt.Sprintf("What category does %s belong to?", name),
-		items: extension.Categories,
+		items: Categories,
 	}
 	category := promptGetSelect(categoryPromptContent)
 

@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 	"kubesphere.io/client-go/kubesphere/scheme"
 
+	"github.com/kubesphere/ksbuilder/pkg/api"
 	"github.com/kubesphere/ksbuilder/pkg/extension"
 )
 
@@ -54,7 +55,7 @@ func publishExtensionCmd() *cobra.Command {
 func (o *publishOptions) publish(_ *cobra.Command, args []string) error {
 	// load extension
 	fmt.Printf("publish extension %s\n", args[0])
-	var ext *extension.Extension
+	var ext *api.Extension
 	var err error
 	if strings.HasPrefix(args[0], "oci://") {
 		ext, err = extension.LoadFromHelm(args[0])
