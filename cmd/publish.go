@@ -6,16 +6,14 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"sigs.k8s.io/yaml"
 	"strings"
 
-	"github.com/iawia002/lia/kubernetes/client"
-	"github.com/iawia002/lia/kubernetes/client/generic"
 	"github.com/spf13/cobra"
-	"kubesphere.io/client-go/kubesphere/scheme"
+	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/pkg/api"
 	"github.com/kubesphere/ksbuilder/pkg/extension"
+	"github.com/kubesphere/ksbuilder/pkg/utils"
 )
 
 type publishOptions struct {
@@ -95,17 +93,13 @@ func (o *publishOptions) publish(_ *cobra.Command, args []string) error {
 			homeDir, _ := os.UserHomeDir()
 			o.kubeconfig = fmt.Sprintf("%s/.kube/config", homeDir)
 		}
-		config, err := client.BuildConfigFromFlags("", o.kubeconfig, client.SetQPS(25, 50))
-		if err != nil {
-			return err
-		}
-		genericClient, err := generic.NewClient(config, generic.WithScheme(scheme.Scheme), generic.WithCacheReader(false))
+		genericClient, err := utils.BuildClientFromFlags(o.kubeconfig)
 		if err != nil {
 			return err
 		}
 		for _, obj := range ext.ToKubernetesResources() {
 			fmt.Printf("creating %s %s\n", obj.GetObjectKind().GroupVersionKind().Kind, obj.GetName())
-			if err = client.Apply(context.Background(), genericClient, obj, client.WithFieldManager("ksbuilder")); err != nil {
+			if err = utils.Apply(context.Background(), genericClient, obj); err != nil {
 				return err
 			}
 		}

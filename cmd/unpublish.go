@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/iawia002/lia/kubernetes/client"
-	"github.com/iawia002/lia/kubernetes/client/generic"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1alpha1 "kubesphere.io/api/core/v1alpha1"
-	"kubesphere.io/client-go/kubesphere/scheme"
 	runtimeclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/kubesphere/ksbuilder/pkg/utils"
 )
 
 type unpublishOptions struct {
@@ -45,11 +44,7 @@ func (o *unpublishOptions) unpublish(_ *cobra.Command, args []string) error {
 		homeDir, _ := os.UserHomeDir()
 		o.kubeconfig = fmt.Sprintf("%s/.kube/config", homeDir)
 	}
-	config, err := client.BuildConfigFromFlags("", o.kubeconfig, client.SetQPS(25, 50))
-	if err != nil {
-		return err
-	}
-	genericClient, err := generic.NewClient(config, generic.WithScheme(scheme.Scheme), generic.WithCacheReader(false))
+	genericClient, err := utils.BuildClientFromFlags(o.kubeconfig)
 	if err != nil {
 		return err
 	}

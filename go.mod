@@ -7,7 +7,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535
 	github.com/go-playground/validator/v10 v10.14.1
-	github.com/iawia002/lia v0.5.1
 	github.com/jedib0t/go-pretty/v6 v6.5.9
 	github.com/manifoldco/promptui v0.9.0
 	github.com/mholt/archiver/v3 v3.5.1
@@ -138,7 +137,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.19.0 // indirect
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	golang.org/x/crypto v0.19.0 // indirect
-	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
+	golang.org/x/mod v0.15.0 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/oauth2 v0.17.0 // indirect
 	golang.org/x/sync v0.5.0 // indirect
