@@ -13,6 +13,7 @@ import (
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/lint/support"
 	"k8s.io/apimachinery/pkg/util/rand"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"sigs.k8s.io/yaml"
 
 	"github.com/kubesphere/ksbuilder/cmd/options"
@@ -158,14 +159,25 @@ func WithBuiltins(o *options.LintOptions, paths []string) error {
 		return err
 	}
 
-	if err := lintExtensionsImages(*o, *chartRequested, paths[0], ext.Metadata.Images); err != nil {
+	if err := lintExtensionsName(ext.Metadata.Name); err != nil {
 		return err
 	}
-	if err := lintGlobalImageRegistry(*o, *chartRequested, paths[0]); err != nil {
+	if err := lintExtensionsImages(*o, *chartRequested, ext.Metadata.Name, ext.Metadata.Images); err != nil {
 		return err
 	}
-	if err := lintGlobalNodeSelector(*o, *chartRequested, paths[0]); err != nil {
+	if err := lintGlobalImageRegistry(*o, *chartRequested, ext.Metadata.Name); err != nil {
 		return err
+	}
+	if err := lintGlobalNodeSelector(*o, *chartRequested, ext.Metadata.Name); err != nil {
+		return err
+	}
+	return nil
+}
+
+func lintExtensionsName(extension string) error {
+	fmt.Print("\nInfo: lint name\n")
+	if errs := validation.IsDNS1123Subdomain(extension); len(errs) != 0 {
+		fmt.Printf("ERROR: extension name \"%s\" is invalid:\n  error: %s\n", extension, strings.Join(errs, "\n  error: "))
 	}
 	return nil
 }
@@ -201,125 +213,180 @@ func lintExtensionsImages(o options.LintOptions, charts chart.Chart, extension s
 }
 
 func lintGlobalNodeSelector(o options.LintOptions, charts chart.Chart, extension string) error {
-	fmt.Print("\nInfo: lint global.nodeSelector\n")
+	fmt.Println("\nInfo: lint global.nodeSelector")
+
+	// Generate a random key for nodeSelector
 	key := rand.String(12)
 	o.ValueOpts.JSONValues = append(o.ValueOpts.JSONValues, fmt.Sprintf("global.nodeSelector={\"kubernetes.io/os\": \"%s\"}", key))
+
 	files, err := getTemplateFile(&o, &charts)
 	if err != nil {
 		return err
 	}
 
-	for name, content := range files {
-		// only find in yaml files
-		if !strings.HasSuffix(name, ".yaml") && !strings.HasSuffix(name, ".yml") {
+	// Store errors grouped by file
+	errs := make(map[string][]string)
+
+	// Helper function to check nodeSelector
+	checkNodeSelector := func(spec map[string]any, kind, name, filename string) {
+		if nodeSelector, ok := spec["nodeSelector"].(map[string]any); !ok || nodeSelector["kubernetes.io/os"] != key {
+			errs[filename] = append(errs[filename], fmt.Sprintf(
+				"Resource: {kind: %s, name: %s }", kind, name,
+			))
+		}
+	}
+
+	// Process each YAML file
+	for filename, content := range files {
+		if !strings.HasSuffix(filename, ".yaml") && !strings.HasSuffix(filename, ".yml") {
 			continue
 		}
+
 		yamlArr := strings.Split(content, "---")
 		for _, y := range yamlArr {
-			yamlMap := make(map[string]any)
+			var yamlMap map[string]any
 			if err := yaml.Unmarshal([]byte(y), &yamlMap); err != nil {
-				return err
+				return fmt.Errorf("failed to parse YAML in file %s: %w", filename, err)
 			}
+
+			// Check nodeSelector for specific kinds
 			switch yamlMap["kind"] {
 			case "Deployment", "StatefulSet", "ReplicaSet", "Job":
-				if yamlMap["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)["nodeSelector"] == nil ||
-					yamlMap["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)["nodeSelector"].(map[string]any)["kubernetes.io/os"] != key {
-					fmt.Printf("ERROR: golobal.nodeSelector doesn't work in extension: %s file: %s Resource: {kind %s, name:%s }\n", extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
+				if spec, ok := yamlMap["spec"].(map[string]any); ok {
+					if template, ok := spec["template"].(map[string]any); ok {
+						if templateSpec, ok := template["spec"].(map[string]any); ok {
+							checkNodeSelector(templateSpec, yamlMap["kind"].(string), yamlMap["metadata"].(map[string]any)["name"].(string), filename)
+						}
+					}
 				}
 
 			case "Pod":
-				if yamlMap["spec"].(map[string]any)["nodeSelector"] == nil ||
-					yamlMap["spec"].(map[string]any)["nodeSelector"].(map[string]any)["kubernetes.io/os"] != key {
-					fmt.Printf("ERROR: golobal.nodeSelector doesn't work in extension: %s file: %s Resource: {kind %s, name:%s }\n", extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
+				if spec, ok := yamlMap["spec"].(map[string]any); ok {
+					checkNodeSelector(spec, yamlMap["kind"].(string), yamlMap["metadata"].(map[string]any)["name"].(string), filename)
 				}
+
 			case "CronJob":
-				if yamlMap["spec"].(map[string]any)["jobTemplate"].(map[string]any)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)["nodeSelector"] == nil ||
-					yamlMap["spec"].(map[string]any)["jobTemplate"].(map[string]any)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)["nodeSelector"].(map[string]any)["kubernetes.io/os"] != key {
-					fmt.Printf("ERROR: golobal.nodeSelector doesn't work in extension: %s file: %s Resource: {kind %s, name:%s }\n", extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
+				if spec, ok := yamlMap["spec"].(map[string]any); ok {
+					if jobTemplate, ok := spec["jobTemplate"].(map[string]any); ok {
+						if jobSpec, ok := jobTemplate["spec"].(map[string]any); ok {
+							if template, ok := jobSpec["template"].(map[string]any); ok {
+								if templateSpec, ok := template["spec"].(map[string]any); ok {
+									checkNodeSelector(templateSpec, yamlMap["kind"].(string), yamlMap["metadata"].(map[string]any)["name"].(string), filename)
+								}
+							}
+						}
+					}
 				}
 			}
 		}
 	}
+
+	// Report errors
+	if len(errs) > 0 {
+		fmt.Printf("ERROR: global.nodeSelector doesn't work in \"%s\"\n", extension)
+		for file, messages := range errs {
+			fmt.Printf("  File \"%s\":\n    %s\n", file, strings.Join(messages, "\n    "))
+		}
+	}
+
 	return nil
 }
 
 func lintGlobalImageRegistry(o options.LintOptions, charts chart.Chart, extension string) error {
 	fmt.Print("\nInfo: lint global.imageRegistry\n")
+
+	// Generate a unique registry key for validation
 	key := rand.String(12)
 	o.ValueOpts.Values = append(o.ValueOpts.Values, fmt.Sprintf("global.imageRegistry=%s", key))
+
+	// Retrieve rendered template files
 	files, err := getTemplateFile(&o, &charts)
 	if err != nil {
 		return err
 	}
 
-	for name, content := range files {
-		// only find in yaml files
-		if !strings.HasSuffix(name, ".yaml") && !strings.HasSuffix(name, ".yml") {
+	// Store errors grouped by file
+	errs := make(map[string][]string)
+
+	// Define a function for container validation
+	checkContainers := func(spec map[string]any, kind, name, filename string) {
+		var containers []string
+		var initContainers []string
+
+		// Validate initContainers
+		if initContainerList, ok := spec["initContainers"].([]any); ok {
+			for _, c := range initContainerList {
+				container := c.(map[string]any)
+				if !strings.Contains(container["image"].(string), key) {
+					initContainers = append(initContainers, container["name"].(string))
+				}
+			}
+		}
+
+		// Validate containers
+		if containerList, ok := spec["containers"].([]any); ok {
+			for _, c := range containerList {
+				container := c.(map[string]any)
+				if !strings.Contains(container["image"].(string), key) {
+					containers = append(containers, container["name"].(string))
+				}
+			}
+		}
+
+		if len(containers) > 0 || len(initContainers) > 0 {
+			errs[filename] = append(errs[filename], fmt.Sprintf(
+				"Resource: {kind: %s, name: %s } InitContainer: [ %s ] Container: [ %s ]", kind, name,
+				strings.Join(initContainers, ", "),
+				strings.Join(containers, ", "),
+			))
+		}
+	}
+
+	// Iterate over all files
+	for filename, content := range files {
+		// Skip non-YAML files
+		if !strings.HasSuffix(filename, ".yaml") && !strings.HasSuffix(filename, ".yml") {
 			continue
 		}
+
+		// Split YAML into individual documents
 		yamlArr := strings.Split(content, "---")
 		for _, y := range yamlArr {
 			yamlMap := make(map[string]any)
+
+			// Unmarshal YAML content
 			if err := yaml.Unmarshal([]byte(y), &yamlMap); err != nil {
 				return err
 			}
+
+			// Check resources based on their kind
+			// var containers, initContainers []string
 			switch yamlMap["kind"] {
 			case "Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job":
-				// init container
-				if initContainer, ok := yamlMap["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)["initContainers"].([]any); ok {
-					for _, c := range initContainer {
-						if !strings.Contains(c.(map[string]any)["image"].(string), key) {
-							fmt.Printf("ERROR: golobal.imageRegistry doesn't work in init-cotainer %s of extension: %s file: %s Resource: {kind %s, name:%s }\n", c.(map[string]any)["name"], extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
-						}
-					}
-				}
-				// container
-				if container, ok := yamlMap["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)["containers"].([]any); ok {
-					for _, c := range container {
-						if !strings.Contains(c.(map[string]any)["image"].(string), key) {
-							fmt.Printf("ERROR: golobal.imageRegistry doesn't work in cotainer %s of extension: %s file: %s Resource: {kind %s, name:%s }\n", c.(map[string]any)["name"], extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
-						}
-					}
-				}
+				checkContainers(yamlMap["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any),
+					yamlMap["kind"].(string),
+					yamlMap["metadata"].(map[string]any)["name"].(string), filename)
 
 			case "Pod":
-				// init container
-				if initContainer, ok := yamlMap["spec"].(map[string]any)["initContainers"].([]any); ok {
-					for _, c := range initContainer {
-						if !strings.Contains(c.(map[string]any)["image"].(string), key) {
-							fmt.Printf("ERROR: golobal.imageRegistry doesn't work in init-cotainer %s of extension: %s file: %s Resource: {kind %s, name:%s }\n", c.(map[string]any)["name"], extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
-						}
-					}
-				}
-				// container
-				if container, ok := yamlMap["spec"].(map[string]any)["containers"].([]any); ok {
-					for _, c := range container {
-						if !strings.Contains(c.(map[string]any)["image"].(string), key) {
-							fmt.Printf("ERROR: golobal.imageRegistry doesn't work in cotainer %s of extension: %s file: %s Resource: {kind %s, name:%s }\n", c.(map[string]any)["name"], extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
-						}
-					}
-				}
+				checkContainers(yamlMap["spec"].(map[string]any),
+					yamlMap["kind"].(string),
+					yamlMap["metadata"].(map[string]any)["name"].(string), filename)
 
 			case "CronJob":
-				// init container
-				if initContainer, ok := yamlMap["spec"].(map[string]any)["jobTemplate"].(map[string]any)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)["initContainers"].([]any); ok {
-					for _, c := range initContainer {
-						if !strings.Contains(c.(map[string]any)["image"].(string), key) {
-							fmt.Printf("ERROR: golobal.imageRegistry doesn't work in init-cotainer %s of extension: %s file: %s Resource: {kind %s, name:%s }\n", c.(map[string]any)["name"], extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
-						}
-					}
-				}
-				// container
-				if container, ok := yamlMap["spec"].(map[string]any)["jobTemplate"].(map[string]any)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any)["containers"].([]any); ok {
-					for _, c := range container {
-						if !strings.Contains(c.(map[string]any)["image"].(string), key) {
-							fmt.Printf("ERROR: golobal.imageRegistry doesn't work in cotainer %s of extension: %s file: %s Resource: {kind %s, name:%s }\n", c.(map[string]any)["name"], extension, name, yamlMap["kind"], yamlMap["metadata"].(map[string]any)["name"])
-						}
-					}
-				}
+				checkContainers(yamlMap["spec"].(map[string]any)["jobTemplate"].(map[string]any)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any), yamlMap["kind"].(string),
+					yamlMap["metadata"].(map[string]any)["name"].(string), filename)
 			}
 		}
 	}
+
+	// Report errors
+	if len(errs) > 0 {
+		fmt.Printf("ERROR: global.imageRegistry doesn't work in \"%s\"\n", extension)
+		for file, messages := range errs {
+			fmt.Printf("  File \"%s\":\n    %s\n", file, strings.Join(messages, "\n    "))
+		}
+	}
+
 	return nil
 }
 
