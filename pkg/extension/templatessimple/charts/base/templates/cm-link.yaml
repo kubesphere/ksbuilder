@@ -184,7 +184,7 @@ data:
                             function n() {
                                 var n = (0, t.useNavigate)();
                                 return (0, e.useEffect)((function () {
-                                    window.open("http://[[ .Name ]].{{ .Values.domain }}:{{ .Values.ingressPort }}"), n(
+                                    window.open("http://[[ .Name ]].{{ .Values.global.extension.ingress.domainSuffix }}:{{ .Values.global.extension.ingress.httpPort }}"), n(
                                         -1, {
                                             replace: !0
                                         })

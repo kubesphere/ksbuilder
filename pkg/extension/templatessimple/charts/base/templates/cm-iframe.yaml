@@ -235,7 +235,7 @@ data:
                                         className: "page-loading"
                                     }), e.default.createElement("iframe", {
                                     ref: u,
-                                    src: "http://[[ .Name ]].{{ .Values.domain }}:{{ .Values.ingressPort }}",
+                                    src: "http://[[ .Name ]].{{ .Values.global.extension.ingress.domainSuffix }}:{{ .Values.global.extension.ingress.httpPort }}",
                                     width: "100%",
                                     height: "100%",
                                     frameBorder: "0",

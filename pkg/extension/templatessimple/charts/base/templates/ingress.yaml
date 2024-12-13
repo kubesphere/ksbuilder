@@ -7,9 +7,9 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
-  ingressClassName: nginx
+  ingressClassName: {{ .Values.global.extension.ingress.ingressClassName }}
   rules:
-    - host: "[[ .Name ]].{{ .Values.domain }}"
+    - host: "[[ .Name ]].{{ .Values.global.extension.ingress.domainSuffix }}"
       http:
         paths:
           - path: /
