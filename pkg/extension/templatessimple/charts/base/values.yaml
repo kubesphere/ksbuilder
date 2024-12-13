@@ -1,15 +1,11 @@
-# 配置为ui的svc的名称与端口
+# The name and port of the SVC configured as the dashboard
 extSvcName: demo
 extSvcPort: 80
-# 访问ks的域名, e.g. www.ks.com,192.168.50.208.nip.io
-domain: www.ks.com
-# 挂载位置 e.g. topbar,global,toolbox,access,cluster,workspace,project,platformSettings
+# Mount location e.g. topbar,global,toolbox,access,cluster,workspace,project,platformSettings
 extParent: topbar
-# ui的超链接名称
+# The hyperlink name of the dashboard
 extTitle: demo
-# 扩展包描述
+# Extension package description
 extDesc: "this is a simple extension"
-# 挂载方式 iframe,link
+# Open with iframe for embedding and link for new tab opening e.g. iframe,link
 extEmbed: iframe
-# ingress controller 对外服务的Node端口
-ingressPort: 30888
