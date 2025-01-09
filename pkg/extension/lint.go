@@ -242,7 +242,7 @@ func lintGlobalNodeSelector(o options.LintOptions, charts chart.Chart, extension
 			continue
 		}
 
-		yamlArr := strings.Split(content, "---")
+		yamlArr := strings.Split(content, "\n---")
 		for _, y := range yamlArr {
 			var yamlMap map[string]any
 			if err := yaml.Unmarshal([]byte(y), &yamlMap); err != nil {
@@ -350,13 +350,13 @@ func lintGlobalImageRegistry(o options.LintOptions, charts chart.Chart, extensio
 		}
 
 		// Split YAML into individual documents
-		yamlArr := strings.Split(content, "---")
+		yamlArr := strings.Split(content, "\n---")
 		for _, y := range yamlArr {
 			yamlMap := make(map[string]any)
 
 			// Unmarshal YAML content
 			if err := yaml.Unmarshal([]byte(y), &yamlMap); err != nil {
-				return err
+				return fmt.Errorf("failed to unmarshal file %s. error: %w", filename, err)
 			}
 
 			// Check resources based on their kind
