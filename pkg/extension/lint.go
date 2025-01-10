@@ -2,7 +2,6 @@ package extension
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"helm.sh/helm/v3/pkg/engine"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/lint/support"
+	"helm.sh/helm/v3/pkg/releaseutil"
 	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -243,7 +243,12 @@ func lintGlobalNodeSelector(o options.LintOptions, charts chart.Chart, extension
 			continue
 		}
 
-		dealResource := func(resource map[string]any) {
+		for _, m := range releaseutil.SplitManifests(content) {
+			var resource map[string]any
+			if err := yaml.Unmarshal([]byte(m), &resource); err != nil {
+				return fmt.Errorf("fail to decoding YAML file %s .error is: %w", filename, err)
+			}
+
 			// Check nodeSelector for specific kinds
 			switch resource["kind"] {
 			case "Deployment", "StatefulSet", "ReplicaSet", "Job":
@@ -275,18 +280,6 @@ func lintGlobalNodeSelector(o options.LintOptions, charts chart.Chart, extension
 			}
 		}
 
-		decoder := yaml.NewYAMLOrJSONDecoder(strings.NewReader(content), 4096)
-		for {
-			var result map[string]any
-			err := decoder.Decode(&result)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				return fmt.Errorf("fail to decoding YAML file %s .error is: %w", filename, err)
-			}
-			dealResource(result)
-		}
 	}
 
 	// Report errors
@@ -357,7 +350,12 @@ func lintGlobalImageRegistry(o options.LintOptions, charts chart.Chart, extensio
 			continue
 		}
 
-		dealResource := func(resource map[string]any) {
+		for _, m := range releaseutil.SplitManifests(content) {
+			var resource map[string]any
+			if err := yaml.Unmarshal([]byte(m), &resource); err != nil {
+				return fmt.Errorf("fail to decoding YAML file %s .error is: %w", filename, err)
+			}
+
 			// Check resources based on their kind
 			// var containers, initContainers []string
 			switch resource["kind"] {
@@ -375,19 +373,6 @@ func lintGlobalImageRegistry(o options.LintOptions, charts chart.Chart, extensio
 				checkContainers(resource["spec"].(map[string]any)["jobTemplate"].(map[string]any)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any), resource["kind"].(string),
 					resource["metadata"].(map[string]any)["name"].(string), filename)
 			}
-		}
-
-		decoder := yaml.NewYAMLOrJSONDecoder(strings.NewReader(content), 4096)
-		for {
-			var result map[string]any
-			err := decoder.Decode(&result)
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				return fmt.Errorf("fail to decoding YAML file %s .error is: %w", filename, err)
-			}
-			dealResource(result)
 		}
 	}
 
