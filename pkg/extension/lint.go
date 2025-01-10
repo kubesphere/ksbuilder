@@ -357,33 +357,37 @@ func lintGlobalImageRegistry(o options.LintOptions, charts chart.Chart, extensio
 			continue
 		}
 
-		// Split YAML into individual documents
-		yamlArr := strings.Split(content, "\n---")
-		for _, y := range yamlArr {
-			yamlMap := make(map[string]any)
-
-			// Unmarshal YAML content
-			if err := yaml.Unmarshal([]byte(y), &yamlMap); err != nil {
-				return fmt.Errorf("failed to unmarshal file %s. error: %w", filename, err)
-			}
-
+		dealResource := func(resource map[string]any) {
 			// Check resources based on their kind
 			// var containers, initContainers []string
-			switch yamlMap["kind"] {
+			switch resource["kind"] {
 			case "Deployment", "StatefulSet", "DaemonSet", "ReplicaSet", "Job":
-				checkContainers(yamlMap["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any),
-					yamlMap["kind"].(string),
-					yamlMap["metadata"].(map[string]any)["name"].(string), filename)
+				checkContainers(resource["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any),
+					resource["kind"].(string),
+					resource["metadata"].(map[string]any)["name"].(string), filename)
 
 			case "Pod":
-				checkContainers(yamlMap["spec"].(map[string]any),
-					yamlMap["kind"].(string),
-					yamlMap["metadata"].(map[string]any)["name"].(string), filename)
+				checkContainers(resource["spec"].(map[string]any),
+					resource["kind"].(string),
+					resource["metadata"].(map[string]any)["name"].(string), filename)
 
 			case "CronJob":
-				checkContainers(yamlMap["spec"].(map[string]any)["jobTemplate"].(map[string]any)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any), yamlMap["kind"].(string),
-					yamlMap["metadata"].(map[string]any)["name"].(string), filename)
+				checkContainers(resource["spec"].(map[string]any)["jobTemplate"].(map[string]any)["spec"].(map[string]any)["template"].(map[string]any)["spec"].(map[string]any), resource["kind"].(string),
+					resource["metadata"].(map[string]any)["name"].(string), filename)
 			}
+		}
+
+		decoder := yaml.NewYAMLOrJSONDecoder(strings.NewReader(content), 4096)
+		for {
+			var result map[string]any
+			err := decoder.Decode(&result)
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				return fmt.Errorf("fail to decoding YAML file %s .error is: %w", filename, err)
+			}
+			dealResource(result)
 		}
 	}
 
