@@ -2,6 +2,7 @@ package extension
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,7 +15,7 @@ import (
 	"helm.sh/helm/v3/pkg/lint/support"
 	"k8s.io/apimachinery/pkg/util/rand"
 	"k8s.io/apimachinery/pkg/util/validation"
-	"sigs.k8s.io/yaml"
+	"k8s.io/apimachinery/pkg/util/yaml"
 
 	"github.com/kubesphere/ksbuilder/cmd/options"
 	"github.com/kubesphere/ksbuilder/pkg/api"
@@ -242,42 +243,49 @@ func lintGlobalNodeSelector(o options.LintOptions, charts chart.Chart, extension
 			continue
 		}
 
-		yamlArr := strings.Split(content, "\n---")
-		for _, y := range yamlArr {
-			var yamlMap map[string]any
-			if err := yaml.Unmarshal([]byte(y), &yamlMap); err != nil {
-				return fmt.Errorf("failed to parse YAML in file %s: %w", filename, err)
-			}
-
+		dealResource := func(resource map[string]any) {
 			// Check nodeSelector for specific kinds
-			switch yamlMap["kind"] {
+			switch resource["kind"] {
 			case "Deployment", "StatefulSet", "ReplicaSet", "Job":
-				if spec, ok := yamlMap["spec"].(map[string]any); ok {
+				if spec, ok := resource["spec"].(map[string]any); ok {
 					if template, ok := spec["template"].(map[string]any); ok {
 						if templateSpec, ok := template["spec"].(map[string]any); ok {
-							checkNodeSelector(templateSpec, yamlMap["kind"].(string), yamlMap["metadata"].(map[string]any)["name"].(string), filename)
+							checkNodeSelector(templateSpec, resource["kind"].(string), resource["metadata"].(map[string]any)["name"].(string), filename)
 						}
 					}
 				}
 
 			case "Pod":
-				if spec, ok := yamlMap["spec"].(map[string]any); ok {
-					checkNodeSelector(spec, yamlMap["kind"].(string), yamlMap["metadata"].(map[string]any)["name"].(string), filename)
+				if spec, ok := resource["spec"].(map[string]any); ok {
+					checkNodeSelector(spec, resource["kind"].(string), resource["metadata"].(map[string]any)["name"].(string), filename)
 				}
 
 			case "CronJob":
-				if spec, ok := yamlMap["spec"].(map[string]any); ok {
+				if spec, ok := resource["spec"].(map[string]any); ok {
 					if jobTemplate, ok := spec["jobTemplate"].(map[string]any); ok {
 						if jobSpec, ok := jobTemplate["spec"].(map[string]any); ok {
 							if template, ok := jobSpec["template"].(map[string]any); ok {
 								if templateSpec, ok := template["spec"].(map[string]any); ok {
-									checkNodeSelector(templateSpec, yamlMap["kind"].(string), yamlMap["metadata"].(map[string]any)["name"].(string), filename)
+									checkNodeSelector(templateSpec, resource["kind"].(string), resource["metadata"].(map[string]any)["name"].(string), filename)
 								}
 							}
 						}
 					}
 				}
 			}
+		}
+
+		decoder := yaml.NewYAMLOrJSONDecoder(strings.NewReader(content), 4096)
+		for {
+			var result map[string]any
+			err := decoder.Decode(&result)
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				return fmt.Errorf("fail to decoding YAML file %s .error is: %w", filename, err)
+			}
+			dealResource(result)
 		}
 	}
 
