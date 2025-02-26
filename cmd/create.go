@@ -29,18 +29,64 @@ type createOptions struct {
 	from string
 }
 
-var Categories = []string{
-	"ai-machine-learning",
-	"computing",
-	"database",
-	"dev-tools",
-	"integration-delivery",
-	"observability",
-	"networking",
-	"security",
-	"storage",
-	"streaming-messaging",
-	"other",
+type Category struct {
+	DisplayNameEN  string
+	NormalizedName string
+}
+
+var Categories = []Category{
+	{
+		DisplayNameEN:  "AI / LLM",
+		NormalizedName: "ai-machine-learning",
+	},
+	{
+		DisplayNameEN:  "DeepSeek",
+		NormalizedName: "deepseek",
+	},
+	{
+		DisplayNameEN:  "Database",
+		NormalizedName: "database",
+	},
+	{
+		DisplayNameEN:  "Observability",
+		NormalizedName: "observability",
+	},
+	{
+		DisplayNameEN:  "CI / CD",
+		NormalizedName: "integration-delivery",
+	},
+	{
+		DisplayNameEN:  "Networking",
+		NormalizedName: "networking",
+	},
+	{
+		DisplayNameEN:  "Security",
+		NormalizedName: "security",
+	},
+	{
+		DisplayNameEN:  "Storage",
+		NormalizedName: "storage",
+	},
+	{
+		DisplayNameEN:  "Streaming and messaging",
+		NormalizedName: "streaming-messaging",
+	},
+	{
+		DisplayNameEN:  "Computing",
+		NormalizedName: "computing",
+	},
+	{
+		DisplayNameEN:  "DevTools",
+		NormalizedName: "dev-tools",
+	},
+}
+
+func getCategoryDisplayNames(categories []Category) []string {
+	var names []string
+	for _, c := range categories {
+		names = append(names, c.DisplayNameEN)
+	}
+	return names
 }
 
 func createExtensionCmd() *cobra.Command {
@@ -64,11 +110,12 @@ func (o *createOptions) run(_ *cobra.Command, _ []string) error {
 	}
 	name := promptGetInput(extensionNamePrompt)
 
+	categoryDisplayNames := getCategoryDisplayNames(Categories)
 	categoryPromptContent := selectPromptContent{
 		text:  fmt.Sprintf("What category does %s belong to?", name),
-		items: Categories,
+		items: categoryDisplayNames,
 	}
-	category := promptGetSelect(categoryPromptContent)
+	categoryIdx := promptGetSelect(categoryPromptContent)
 
 	authorPrompt := inputPromptContent{
 		text:     "Please input extension author",
@@ -90,7 +137,7 @@ func (o *createOptions) run(_ *cobra.Command, _ []string) error {
 
 	extensionConfig := extension.Config{
 		Name:     name,
-		Category: category,
+		Category: Categories[categoryIdx].NormalizedName,
 		Author:   author,
 		Email:    email,
 		URL:      url,
@@ -151,7 +198,7 @@ func promptGetInput(pc inputPromptContent) string {
 	return strings.TrimSpace(result)
 }
 
-func promptGetSelect(pc selectPromptContent) string {
+func promptGetSelect(pc selectPromptContent) int {
 	prompt := promptui.Select{
 		Label: pc.text,
 		Items: pc.items,
@@ -161,10 +208,10 @@ func promptGetSelect(pc selectPromptContent) string {
 		StartInSearchMode: pc.startInSearchMode,
 	}
 
-	_, result, err := prompt.Run()
+	idx, _, err := prompt.Run()
 	if err != nil {
 		fmt.Printf("Prompt failed %v\n", err)
 		os.Exit(1)
 	}
-	return result
+	return idx
 }
