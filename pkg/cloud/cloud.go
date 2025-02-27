@@ -264,3 +264,17 @@ func (c *Client) ListExtensionSnapshots(extensionName string) ([]Snapshot, error
 	}
 	return data, nil
 }
+
+func (c *Client) LocateExtensionSnapshot(extensionName string, version string) (*Snapshot, error) {
+	data := &Snapshot{}
+	if err := c.sendRequest(
+		http.MethodGet,
+		fmt.Sprintf("/apis/extension/v1/extensions/%s/versions/%s", extensionName, version),
+		nil,
+		nil,
+		&data,
+	); err != nil {
+		return nil, err
+	}
+	return data, nil
+}
