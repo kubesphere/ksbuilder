@@ -35,7 +35,10 @@ func packageExtensionCmd() *cobra.Command {
 
 func (o *packageOptions) packageCmd(_ *cobra.Command, args []string) error {
 	pwd, _ := os.Getwd()
-	p := path.Join(pwd, args[0])
+	p := args[0]
+	if !path.IsAbs(p) {
+		p = path.Join(pwd, p)
+	}
 	fmt.Printf("package extension %s\n", args[0])
 
 	tempDir, err := os.MkdirTemp("", "chart")

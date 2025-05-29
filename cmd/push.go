@@ -43,7 +43,12 @@ func (o *pushOptions) push(_ *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tempDir)
+	defer func(path string) {
+		err := os.RemoveAll(path)
+		if err != nil {
+			fmt.Printf("remove %s failed: %v", path, err)
+		}
+	}(tempDir)
 	if err = extension.WriteFilesToTempDir(args[0], tempDir); err != nil {
 		return err
 	}

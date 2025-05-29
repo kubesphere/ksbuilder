@@ -53,7 +53,9 @@ func Read() (*Config, error) {
 		}
 		return nil, err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 
 	data, err := io.ReadAll(f)
 	if err != nil {

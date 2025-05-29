@@ -25,7 +25,7 @@ func PrintTemplate(args []string, o *options.TemplateOptions, out io.Writer) err
 		return err
 	}
 	o.Client.ReleaseName = name
-	cp, err := o.Client.ChartPathOptions.LocateChart(chart, o.Settings)
+	cp, err := o.Client.LocateChart(chart, o.Settings)
 	if err != nil {
 		return err
 	}
@@ -48,7 +48,7 @@ func PrintTemplate(args []string, o *options.TemplateOptions, out io.Writer) err
 	// we always want to print the YAML, even if it is not valid. The error is still returned afterwards.
 	if rel != nil {
 		var manifests bytes.Buffer
-		fmt.Fprintln(&manifests, strings.TrimSpace(rel.Manifest))
+		_, _ = fmt.Fprintln(&manifests, strings.TrimSpace(rel.Manifest))
 		if !o.Client.DisableHooks {
 			fileWritten := make(map[string]bool)
 			for _, m := range rel.Hooks {
@@ -56,7 +56,7 @@ func PrintTemplate(args []string, o *options.TemplateOptions, out io.Writer) err
 					continue
 				}
 				if o.Client.OutputDir == "" {
-					fmt.Fprintf(&manifests, "---\n# Source: %s\n%s\n", m.Path, m.Manifest)
+					_, _ = fmt.Fprintf(&manifests, "---\n# Source: %s\n%s\n", m.Path, m.Manifest)
 				} else {
 					newDir := o.Client.OutputDir
 					if o.Client.UseReleaseName {
@@ -121,10 +121,10 @@ func PrintTemplate(args []string, o *options.TemplateOptions, out io.Writer) err
 				}
 			}
 			for _, m := range manifestsToRender {
-				fmt.Fprintf(out, "---\n%s\n", m)
+				_, _ = fmt.Fprintf(out, "---\n%s\n", m)
 			}
 		} else {
-			fmt.Fprintf(out, "%s", manifests.String())
+			_, _ = fmt.Fprintf(out, "%s", manifests.String())
 		}
 	}
 
@@ -156,10 +156,11 @@ func writeToFile(outputDir string, name string, data string, append bool) error 
 		return err
 	}
 
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 
-	_, err = f.WriteString(fmt.Sprintf("---\n# Source: %s\n%s\n", name, data))
-
+	_, err = fmt.Fprintf(f, "---\n# Source: %s\n%s\n", name, data)
 	if err != nil {
 		return err
 	}

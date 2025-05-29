@@ -39,7 +39,9 @@ func WithHelm(o *options.LintOptions, paths []string) error {
 						if err != nil {
 							return err
 						}
-						defer file.Close()
+						defer func(file *os.File) {
+							_ = file.Close()
+						}(file)
 
 						if err = chartutil.Expand(tempDir, file); err != nil {
 							return err
@@ -141,7 +143,7 @@ func WithHelm(o *options.LintOptions, paths []string) error {
 
 	summary := fmt.Sprintf("%d chart(s) linted, %d chart(s) failed", len(paths), failed)
 	if failed > 0 {
-		return fmt.Errorf(summary)
+		return fmt.Errorf("error: %s", summary)
 	}
 	if !o.Client.Quiet || errorsOrWarnings > 0 {
 		fmt.Print(summary)

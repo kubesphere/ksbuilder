@@ -41,7 +41,7 @@ func (o *unpushOptions) unpush(_ *cobra.Command, args []string) error {
 		}
 		snap, err := client.LocateExtensionSnapshot(ext.Metadata.Name, ext.Metadata.Version)
 		if err != nil {
-			return fmt.Errorf("failed to locate snapshot on KubeSphere Cloud: %v\n", err)
+			return fmt.Errorf("failed to locate snapshot on KubeSphere Cloud: %v", err)
 		}
 		fmt.Printf("Snapshot found on KubeSphere Cloud\n")
 		snapshot = snap.SnapshotID
