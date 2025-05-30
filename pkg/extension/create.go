@@ -2,6 +2,7 @@ package extension
 
 import (
 	"bytes"
+	"context"
 	"embed"
 	"fmt"
 	"io"
@@ -14,7 +15,7 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/mholt/archiver/v3"
+	"hauler.dev/go/hauler/pkg/archives"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,12 +61,16 @@ func copyZipFile(srcPath, dstPath string) error {
 	if err != nil {
 		return err
 	}
-	defer srcFile.Close()
+	defer func(srcFile *os.File) {
+		_ = srcFile.Close()
+	}(srcFile)
 	dstFile, err := os.Create(dstFilePath)
 	if err != nil {
 		return err
 	}
-	defer dstFile.Close()
+	defer func(dstFile *os.File) {
+		_ = dstFile.Close()
+	}(dstFile)
 	_, err = io.Copy(dstFile, srcFile)
 	return err
 }
@@ -144,11 +149,11 @@ func CreateSimple(chartPath string) error {
 	if err != nil {
 		return err
 	}
-	err = archiver.Unarchive(chartPath, filepath.Join(root, "charts"))
-	if err != nil {
-		return err
-	}
 
+	err = archives.Unarchive(context.Background(), chartPath, filepath.Join(root, "charts"))
+	if err != nil {
+		return fmt.Errorf("failed to extract chart: %w", err)
+	}
 	extensionConfig := ConfigSimple{
 		Name: chartPack.Name(),
 	}

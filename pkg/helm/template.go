@@ -54,7 +54,7 @@ func Template(args []string, o *options.TemplateOptions, cp string, metadata *ch
 				man := &downloader.Manager{
 					Out:              out,
 					ChartPath:        cp,
-					Keyring:          o.Client.ChartPathOptions.Keyring,
+					Keyring:          o.Client.Keyring,
 					SkipUpdate:       false,
 					Getters:          p,
 					RepositoryConfig: o.Settings.RepositoryConfig,
@@ -93,7 +93,7 @@ func Template(args []string, o *options.TemplateOptions, cp string, metadata *ch
 	signal.Notify(cSignal, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-cSignal
-		fmt.Fprintf(out, "Release %s has been cancelled.\n", args[0])
+		_, _ = fmt.Fprintf(out, "Release %s has been cancelled.\n", args[0])
 		cancel()
 	}()
 
@@ -102,7 +102,7 @@ func Template(args []string, o *options.TemplateOptions, cp string, metadata *ch
 
 func warning(format string, v ...interface{}) {
 	format = fmt.Sprintf("WARNING: %s\n", format)
-	fmt.Fprintf(os.Stderr, format, v...)
+	_, _ = fmt.Fprintf(os.Stderr, format, v...)
 }
 
 // checkIfInstallable validates if a chart can be installed

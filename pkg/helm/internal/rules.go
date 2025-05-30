@@ -60,7 +60,9 @@ func ParseFile(file string) (*Rules, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 	return Parse(f)
 }
 

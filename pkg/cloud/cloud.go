@@ -82,7 +82,9 @@ func (c *Client) sendRequest(method, path string, body io.Reader, headers map[st
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(resp.Body)
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -121,7 +123,9 @@ func (c *Client) UploadFiles(extensionName, extensionVersion, sourceDir string, 
 			if err != nil {
 				return err
 			}
-			defer f.Close()
+			defer func(f *os.File) {
+				_ = f.Close()
+			}(f)
 
 			fileName := filepath.Base(f.Name())
 			part, err := writer.CreateFormFile(fmt.Sprintf("file%d", i+1), fileName)
@@ -167,7 +171,9 @@ func (c *Client) UploadExtension(extensionName, path string) (*UploadExtensionRe
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 
 	fileName := filepath.Base(f.Name())
 	part, err := writer.CreateFormFile("extension_package", fileName)
@@ -196,7 +202,7 @@ func (c *Client) UploadExtension(extensionName, path string) (*UploadExtensionRe
 
 func (c *Client) SubmitExtension(snapshotID string) error {
 	body := &bytes.Buffer{}
-	body.WriteString(fmt.Sprintf(`{"message": "%s submit for review"}`, time.Now().Format(time.RFC3339)))
+	_, _ = fmt.Fprintf(body, `{"message": "%s submit for review"}`, time.Now().Format(time.RFC3339))
 
 	return c.sendRequest(
 		http.MethodPost,
@@ -222,7 +228,7 @@ func (c *Client) CancelSubmitExtension(snapshotID string) error {
 
 func (c *Client) ListExtensions() (*ListExtensionsResponse, error) {
 	body := &bytes.Buffer{}
-	body.WriteString(fmt.Sprintf(`{"developer_ids": ["%s"], "statuses": ["*"]}`, c.userID))
+	_, _ = fmt.Fprintf(body, `{"developer_ids": ["%s"], "statuses": ["*"]}`, c.userID)
 
 	data := &ListExtensionsResponse{}
 	if err := c.sendRequest(
