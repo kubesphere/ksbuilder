@@ -180,7 +180,7 @@ func WithBuiltins(o *options.LintOptions, paths []string) error {
 func lintExtensionsName(extension string) error {
 	fmt.Print("\nInfo: lint name\n")
 	if errs := validation.IsDNS1123Subdomain(extension); len(errs) != 0 {
-		fmt.Printf("ERROR: extension name \"%s\" is invalid:\n  error: %s\n", extension, strings.Join(errs, "\n  error: "))
+		fmt.Printf("ERROR: invalid extension name \"%s\":\n  error: %s\n", extension, strings.Join(errs, "\n  error: "))
 	}
 	return nil
 }
@@ -188,7 +188,7 @@ func lintExtensionsName(extension string) error {
 func lintExtensionsImages(o options.LintOptions, charts chart.Chart, extension string, images []string) error {
 	fmt.Print("\nInfo: lint images\n")
 	if len(images) == 0 {
-		fmt.Printf("WARNING: extension %s has no images\n", extension)
+		fmt.Printf("WARNING: extension %s has no image definitions\n", extension)
 		return nil
 	}
 
@@ -209,7 +209,7 @@ func lintExtensionsImages(o options.LintOptions, charts chart.Chart, extension s
 				goto found
 			}
 		}
-		fmt.Printf("WARNING: image %s has not found\n", image)
+		fmt.Printf("WARNING: image %s was not found\n", image)
 	found:
 	}
 	return nil
@@ -407,10 +407,9 @@ func getTemplateFile(o *options.LintOptions, chartRequested *chart.Chart) (map[s
 	top := map[string]interface{}{
 		"Chart":        chartRequested.Metadata,
 		"Capabilities": chartutil.DefaultCapabilities.Copy(),
-		// set Release undefined
 		"Release": map[string]interface{}{
-			"Name":      "undefined",
-			"Namespace": "undefined",
+			"Name":      chartRequested.Name(),
+			"Namespace": fmt.Sprintf("extension-%s", chartRequested.Name()),
 			"Revision":  1,
 			"Service":   "Helm",
 		},

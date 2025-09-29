@@ -184,9 +184,9 @@ func Load(path string) (*api.Extension, error) {
 		return nil, err
 	}
 
-	if err = LoadApplicationClass(metadata.Name, tempDir); err != nil {
-		return nil, err
-	}
+	//if err = LoadApplicationClass(metadata.Name, tempDir); err != nil {
+	//	return nil, err
+	//}
 
 	ch, err := loader.LoadDir(tempDir)
 	if err != nil {

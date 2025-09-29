@@ -2,7 +2,7 @@
 extSvcName: demo
 extSvcPort: 80
 # Mount location e.g. topbar,global,toolbox,access,cluster,workspace,project,platformSettings
-extParent: topbar
+extParent: global
 # The hyperlink name of the dashboard
 extTitle: demo
 # Extension package description

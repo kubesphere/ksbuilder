@@ -19,9 +19,7 @@ import (
 type publishOptions struct {
 	kubeconfig string
 
-	// only generate kubernetes resource. and do not apply to k8s cluster
-	localTemplate bool
-	// the template output path.default current dir. only used when localTemplate is true
+	dryRun bool
 	output string
 }
 
@@ -45,7 +43,7 @@ func publishExtensionCmd() *cobra.Command {
 		RunE:  o.publish,
 	}
 	cmd.Flags().StringVar(&o.kubeconfig, "kubeconfig", "", "kubeconfig file path of the target cluster")
-	cmd.Flags().BoolVar(&o.localTemplate, "to-local-template", o.localTemplate, "publish to local template instead of k8s cluster")
+	cmd.Flags().BoolVar(&o.dryRun, "dryRun", o.dryRun, "generate the local template without applying to the cluster")
 	cmd.Flags().StringVar(&o.output, "output", o.output, "the output path of the local template")
 	return cmd
 }
@@ -62,14 +60,18 @@ func (o *publishOptions) publish(_ *cobra.Command, args []string) error {
 		}
 	} else {
 		pwd, _ := os.Getwd()
-		ext, err = extension.Load(path.Join(pwd, args[0]))
+		location := args[0]
+		if !path.IsAbs(location) {
+			location = path.Join(pwd, location)
+		}
+		ext, err = extension.Load(location)
 		if err != nil {
 			return err
 		}
 	}
 
 	// generate resources
-	if o.localTemplate {
+	if o.dryRun {
 		fmt.Printf("generate resources to %s\n", o.output)
 		if _, err := os.Stat(o.output); os.IsNotExist(err) {
 			if err := os.MkdirAll(o.output, 0755); err != nil {

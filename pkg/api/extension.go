@@ -24,6 +24,7 @@ type Extension struct {
 }
 
 func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
+	now := metav1.Now()
 	var resources = []runtimeclient.Object{
 		&corev1alpha1.Extension{
 			TypeMeta: metav1.TypeMeta{
@@ -43,11 +44,8 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 					DisplayName: ext.Metadata.DisplayName,
 					Icon:        ext.Metadata.Icon,
 					Provider:    ext.Metadata.Provider,
-					Created:     metav1.Now(),
+					Created:     now,
 				},
-			},
-			Status: corev1alpha1.ExtensionStatus{
-				RecommendedVersion: ext.Metadata.Version,
 			},
 		}}
 	extensionVersion := &corev1alpha1.ExtensionVersion{
@@ -70,19 +68,8 @@ func (ext *Extension) ToKubernetesResources() []runtimeclient.Object {
 				DisplayName: ext.Metadata.DisplayName,
 				Icon:        ext.Metadata.Icon,
 				Provider:    ext.Metadata.Provider,
-				Created:     metav1.Now(),
+				Created:     now,
 			},
-			Docs:                 ext.Metadata.Docs,
-			Namespace:            ext.Metadata.Namespace,
-			Home:                 ext.Metadata.Home,
-			Keywords:             ext.Metadata.Keywords,
-			KSVersion:            ext.Metadata.KSVersion,
-			KubeVersion:          ext.Metadata.KubeVersion,
-			Sources:              ext.Metadata.Sources,
-			Version:              ext.Metadata.Version,
-			Category:             ext.Metadata.Category,
-			Screenshots:          ext.Metadata.Screenshots,
-			ExternalDependencies: ext.Metadata.ExternalDependencies,
 		},
 	}
 	if ext.ChartURL != "" {
