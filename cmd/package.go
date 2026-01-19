@@ -49,7 +49,7 @@ func (o *packageOptions) packageCmd(_ *cobra.Command, args []string) error {
 
 	// Copy with FollowSymLink option to resolve symlinks
 	opt := copy.Options{
-		OnSymlink: func(src string) copy.SymlinkAction {
+		OnSymlink: func(_ string) copy.SymlinkAction {
 			return copy.Deep
 		},
 	}
