@@ -47,7 +47,13 @@ func (o *packageOptions) packageCmd(_ *cobra.Command, args []string) error {
 	}
 	defer os.RemoveAll(tempDir) // nolint
 
-	if err = copy.Copy(p, tempDir); err != nil {
+	// Copy with FollowSymLink option to resolve symlinks
+	opt := copy.Options{
+		OnSymlink: func(src string) copy.SymlinkAction {
+			return copy.Deep
+		},
+	}
+	if err = copy.Copy(p, tempDir, opt); err != nil {
 		return err
 	}
 
