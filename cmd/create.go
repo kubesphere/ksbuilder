@@ -44,10 +44,6 @@ var Categories = []Category{
 		NormalizedName: "ai-machine-learning",
 	},
 	{
-		DisplayNameEN:  "DeepSeek",
-		NormalizedName: "deepseek",
-	},
-	{
 		DisplayNameEN:  "Database",
 		NormalizedName: "database",
 	},
@@ -82,6 +78,10 @@ var Categories = []Category{
 	{
 		DisplayNameEN:  "DevTools",
 		NormalizedName: "dev-tools",
+	},
+	{
+		DisplayNameEN:  "Uncategorized",
+		NormalizedName: "uncategorized",
 	},
 }
 
@@ -120,7 +120,7 @@ Otherwise, interactive mode prompts for:
   - From scratch (Standard/Frontend-only/Backend-only) or from existing Helm chart
   - For app/simple: use --type with --from=<chart> to skip prompts`,
 		Args: cobra.ExactArgs(0),
-		RunE:  o.run,
+		RunE: o.run,
 	}
 	cmd.Flags().StringVar(&o.from, "from", "", "application helm chart file path of application class")
 	cmd.Flags().StringVar(&o.typ, "type", "standard", "extension type: standard (default), app, or simple. app/simple require --from")
@@ -285,9 +285,9 @@ func (o *createOptions) run(c *cobra.Command, _ []string) error {
 			},
 			Category: Categories[categoryIdx].NormalizedName,
 			Keywords: []string{name, Categories[categoryIdx].NormalizedName},
-			Author:    author,
-			Email:     email,
-			URL:       url,
+			Author:   author,
+			Email:    email,
+			URL:      url,
 		},
 		Permissions: spec.PermDefault,
 	}
